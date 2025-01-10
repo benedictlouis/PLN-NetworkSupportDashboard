@@ -3,7 +3,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-import MainPage from './pages/mainpage';
+import DashboardPage from './pages/dashboardpage';
+import LoginPage from './pages/loginpage';
+import ListPage from './pages/listpage';
 
 import './index.css';
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
@@ -11,8 +13,10 @@ import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements } 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
-      <Route index element={<MainPage />} />
-      <Route path="home" element={<MainPage />} />
+      <Route index element={<DashboardPage />} />
+      <Route path="dashboard" element={<DashboardPage />} />
+      <Route path="login" element={<LoginPage />} />
+      <Route path="list" element={<ListPage />} />
     </Route>
   )
 );
