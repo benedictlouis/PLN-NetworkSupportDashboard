@@ -12,8 +12,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
+const userRoutes = require("./routes/user_routes.js");
 
-pool.connect(() => {
+app.use("/user", userRoutes);
+
+pool.connect(() => {    
     console.log("Connected to database");
 });
 
