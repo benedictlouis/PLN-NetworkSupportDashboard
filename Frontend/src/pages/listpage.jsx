@@ -3,7 +3,7 @@ import Card from "../components/card";
 
 const ListPage = () => {
     return (
-        <div className="relative h-screen w-screen bg-[#fafafa] pt-2">
+        <div className="relative h-full w-screen bg-[#fafafa] pt-2">
             <Navbar />
 
             <div className=" flex flex-col items-center justify-center flex-row items-center justify-center pl-6 pr-6 pt-6">

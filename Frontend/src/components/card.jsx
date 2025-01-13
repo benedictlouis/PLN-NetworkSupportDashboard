@@ -2,51 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 const Card = () => {
-    // const [teams, setTeams] = useState([]);
-    // const [searchKeyword, setSearchKeyword] = useState("");
-    // const cardsRef = useRef([]);
-
-    // const filteredTeams = teams.filter((team) =>
-    //     team.team_name.toLowerCase().includes(searchKeyword.toLowerCase())
-    // );
-
-    // useEffect(() => {
-    //     fetch("http://localhost:3001/teams") //LINK NYA GANTI
-    //         .then((response) => response.json())
-    //         .then((data) => setTeams(data))
-    //         .catch((error) => console.error("Error fetching data", error));
-    // }, []);
-
-    // useEffect(() => {
-    //     const observer = new IntersectionObserver(
-    //         (entries, observer) => {
-    //             entries.forEach((entry) => {
-    //                 if (entry.isIntersecting) {
-    //                     entry.target.classList.add("opacity-100", "transform-none");
-    //                     observer.unobserve(entry.target);
-    //                 }
-    //             });
-    //         },
-    //         {
-    //             threshold: 0.1,
-    //         }
-    //     );
-
-    //     cardsRef.current.forEach((card) => {
-    //         if (card) {
-    //             observer.observe(card);
-    //         }
-    //     });
-
-    //     return () => {
-    //         observer.disconnect();
-    //     };
-    // }, [filteredTeams]); // Update dependency to include filteredTeams
-
-    // const handleSearchChange = (e) => {
-    //     setSearchKeyword(e.target.value);
-    // };
-
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -67,6 +22,12 @@ const Card = () => {
         fetchReports();
     }, []);
 
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', options); // Format tanggal Indonesia
+    };
+
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -79,15 +40,15 @@ const Card = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {reports.map((report) => (
                 <div key={report.id} className="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow">
-                    <a href={`http://localhost:5433/data/${report.id}`}>
+                    <a href={`http://localhost:5173/data/${report.id}`}>
                         <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">Wi-Fi</h5>
                     </a>
                     <p className="mb-3 font-normal text-gray-500">
-                        Tanggal Laporan: {report.tanggal_awal} <br />
-                        Jam Laporan: {report.jam_awal} <br />
+                        Tanggal Laporan: {formatDate(report.tanggal_awal)} <br />
+                        Jam Laporan: {report.jam_awal} WIB <br />
                         Nama Pelapor: {report.nama_pelapor_telepon} <br />
-                        Divisi: {report.divisi || "N/A"} <br />
-                        Lokasi: {report.lokasi || "N/A"} <br />
+                        Divisi: {report.divisi || "-"} <br />
+                        Lokasi: {report.lokasi || "-"} <br />
                     </p>
                     <p
                         className={`mb-3 font-normal ${report.status_kerja === "Resolved"
@@ -101,7 +62,7 @@ const Card = () => {
                     </p>
 
                     <a
-                        href={`http://localhost:5433/data/${report.id}`}
+                        href={`http://localhost:5173/data/${report.id}`}
                         className="inline-flex py-2 px-3 items-center text-sm font-medium text-center bg-[#1C94AC] text-white rounded-lg hover:bg-blue-700"
                     >
                         Detail

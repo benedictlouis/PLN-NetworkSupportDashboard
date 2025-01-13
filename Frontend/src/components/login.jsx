@@ -10,7 +10,7 @@ import ToastContainer from './ToastContainer';
 
 const Login = () => {
     const [username, setUsername] = useState("");
-    const [pass, setPass] = useState("");
+    const [password, setPass] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [toasts, setToasts] = useState([]);
 
@@ -26,26 +26,27 @@ const Login = () => {
 
     const handleLogin = async (event) => {
         event.preventDefault();
-        if (!username || !pass) {
+        if (!username.trim() || !password.trim()) {
             addToast('error', 'All fields are required');
             return;
         }
         try {
-            const response = await fetch("http://localhost:3001/LoginAdmin", {
+            const response = await fetch("http://localhost:5433/user/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ username, pass }),
+                body: JSON.stringify({ username, password }),
             });
             const data = await response.json();
             console.log(data);
             if (response.ok) {
-                sessionStorage.setItem("isLogin", true);
+                sessionStorage.setItem("isLoggedIn", true);
                 addToast('success', 'Logged in successfully');
                 setTimeout(() => window.location.href = "/", 3000);
             } else {
                 addToast('error', 'Username or password is incorrect');
+                console.log(username, password);
             }
         } catch (error) {
             console.error("Error logging in:", error);
@@ -110,7 +111,7 @@ const Login = () => {
                             label="Password"
                             variant="outlined"
                             type={showPassword ? "text" : "password"}
-                            value={pass}
+                            value={password}
                             onChange={(event) => setPass(event.target.value)}
                             InputLabelProps={{ style: { color: 'black' } }}
                             InputProps={{

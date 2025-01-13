@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { navLinks } from "../index.js";
-import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Disclosure } from '@headlessui/react';
+import { Bars3Icon } from '@heroicons/react/24/outline';
 import ToastContainer from "./ToastContainer";
 
 function classNames(...classes) {
@@ -9,25 +9,24 @@ function classNames(...classes) {
 }
 
 export default function Navbar() {
-
     const [active, setActive] = useState();
-    const [isLogin, setIsLogin] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [toasts, setToasts] = useState([]);
 
     useEffect(() => {
-        const loginStatus = sessionStorage.getItem("isLogin");
-        setIsLogin(loginStatus === "true");
+        const loginStatus = sessionStorage.getItem("isLoggedIn");
+        setIsLoggedIn(loginStatus === "true");
     }, []);
 
-    const updatedNavLinks = isLogin
+    const updatedNavLinks = isLoggedIn
         ? navLinks.map((nav) =>
             nav.id === "login" ? { ...nav, title: "Log Out" } : nav
         )
-        : navLinks.filter((nav) => nav.id !== "DataManagement");
+        : navLinks;
 
     const handleLogout = () => {
-        sessionStorage.setItem("isLogin", "false");
-        setIsLogin(false);
+        sessionStorage.setItem("isLoggedIn", "false");
+        setIsLoggedIn(false);
         addToast("success", "You have been logged out!");
         setTimeout(() => (window.location.href = "/"), 3000);
     };
@@ -44,20 +43,17 @@ export default function Navbar() {
 
     return (
         <>
-            <Disclosure as="nav" className="">
+            <Disclosure as="nav">
                 <div className="mx-auto max-w-7xl px-2 px-6">
                     <div className="relative flex h-16 items-center justify-center">
-                        {/* Bagian kiri navbar */}
                         <div className="max-md:hidden absolute inset-y-0 left-0 flex items-center">
                             <span className="text-lg font-bold text-black">NETWORK SUPPORT</span>
-
                         </div>
 
                         <div className="md:hidden pl-3 absolute inset-y-0 left-0 flex items-center">
                             <span className="text-lg font-bold text-black">NETWORK<br></br>SUPPORT</span>
                         </div>
 
-                        {/* Tombol navigasi di tengah */}
                         <div className="hidden sm:flex flex-1 items-center justify-center max-md:items-end max-md:justify-end">
                             <div className="flex space-x-4">
                                 {updatedNavLinks.map((nav) => (
@@ -70,7 +66,12 @@ export default function Navbar() {
                                                 : 'text-black bg-[#f9f9f9] hover:bg-gray-300 hover:text-black',
                                             'rounded-3xl px-6 py-2 text-sm font-medium transition ease-in duration-150 shadow-inner',
                                         )}
-                                        onClick={() => setActive(nav.id)}
+                                        onClick={() => {
+                                            if (nav.id === "login" && isLoggedIn) {
+                                                setActive(nav.id);
+                                                handleLogout();
+                                            }
+                                        }}
                                     >
                                         {nav.title}
                                     </a>
@@ -78,7 +79,6 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        {/* Tombol menu mobile */}
                         <div className="absolute inset-y-0 right-0 flex items-center sm:hidden">
                             <Disclosure.Button className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 bg-transparent hover:bg-gray-350 hover:text-black">
                                 <span className="sr-only">Open main menu</span>
@@ -101,7 +101,10 @@ export default function Navbar() {
                                         : 'text-black bg-[#f9f9f9] hover:bg-gray-300 hover:text-black',
                                     'rounded-3xl px-6 py-2 text-sm font-medium transition ease-in duration-150 shadow-inner',
                                 )}
-                                onClick={() => setActive(nav.id)}
+                                onClick={() => {
+                                    setActive(nav.id);
+                                    if (nav.onClick) nav.onClick(); // Call handleLogout if logout button is clicked
+                                }}
                             >
                                 {nav.title}
                             </Disclosure.Button>
@@ -109,8 +112,8 @@ export default function Navbar() {
                     </div>
                 </Disclosure.Panel>
             </Disclosure>
+
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </>
     );
-
 }
