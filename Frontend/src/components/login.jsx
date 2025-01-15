@@ -46,7 +46,6 @@ const Login = () => {
                 setTimeout(() => window.location.href = "/", 3000);
             } else {
                 addToast('error', 'Username or password is incorrect');
-                console.log(username, password);
             }
         } catch (error) {
             console.error("Error logging in:", error);

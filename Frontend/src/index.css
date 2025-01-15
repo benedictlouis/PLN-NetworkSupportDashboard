@@ -101,7 +101,7 @@ button:focus-visible {
 }
 
 .bg-gradient{
-  background: linear-gradient(90deg, #1C94AC 0%, #d9d9d9 100%);
+  background-color: linear-gradient(90deg, #1C94AC 0%, #d9d9d9 100%);
 }
 
 .biru-pln{
