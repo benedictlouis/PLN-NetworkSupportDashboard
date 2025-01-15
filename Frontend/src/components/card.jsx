@@ -41,7 +41,7 @@ const Card = () => {
             {reports.map((report) => (
                 <div key={report.id} className="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow">
                     <a href={`http://localhost:5173/data/${report.id}`}>
-                        <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">Wi-Fi</h5>
+                        <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">{report.kategori_pekerjaan}</h5>
                     </a>
                     <p className="mb-3 font-normal text-gray-500">
                         Tanggal Laporan: {formatDate(report.tanggal_awal)} <br />
