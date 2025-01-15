@@ -107,3 +107,34 @@ exports.deleteData = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+exports.getDurations = async (req, res) => {
+    try {
+        console.log("Fetching durations...");
+        const result = await pool.query(`
+            SELECT 
+                id,
+                ROUND(
+                    EXTRACT(EPOCH FROM (
+                        (tanggal_selesai + jam_selesai::time) - (tanggal_awal + jam_awal::time)
+                    )) / 60, 
+                    2
+                ) AS duration_minutes,
+                pic
+            FROM network_support
+            WHERE 
+                tanggal_awal IS NOT NULL AND jam_awal IS NOT NULL AND 
+                tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL;
+        `);
+        
+        if (!result.rows.length) {
+            console.log("No data found.");
+            return res.status(404).json({ message: 'No data found' });
+        }
+    
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error occurred while fetching durations:', err);
+        res.status(500).json({ message: 'Internal server error', error: err.message });
+    }
+};
