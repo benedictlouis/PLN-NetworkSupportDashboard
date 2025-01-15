@@ -11,7 +11,7 @@ const AddPage = () => {
                     <h1 className="font-bold text-[60px] text-gradient pt-4 pb-4">Tambah Pekerjaan</h1>
                     <h2 className="text-[20px] text-gray-500 pb-6">Tambahkan pekerjaan yang baru diterima</h2>
                 </div>
-                
+
                 <div className="flex justify-center h-full pt-4 bg-[#fafafa]">
                     <Form />
                 </div>
