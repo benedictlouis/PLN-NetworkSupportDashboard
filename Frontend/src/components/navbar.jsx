@@ -47,11 +47,15 @@ export default function Navbar() {
                 <div className="mx-auto max-w-7xl px-2 px-6">
                     <div className="relative flex h-16 items-center justify-center">
                         <div className="max-md:hidden absolute inset-y-0 left-0 flex items-center">
-                            <span className="text-lg font-bold text-black">DAILY ACTIVITY</span>
+                            <a href="/">
+                                <span className="text-lg font-bold text-black">DAILY ACTIVITY</span>
+                            </a>
                         </div>
 
                         <div className="md:hidden pl-3 absolute inset-y-0 left-0 flex items-center">
-                            <span className="text-lg font-bold text-black">DAILY<br></br>ACTIVITY</span>
+                            <a href="/">
+                                <span className="text-lg font-bold text-black">DAILY<br></br>ACTIVITY</span>
+                            </a>
                         </div>
 
                         <div className="hidden sm:flex flex-1 items-center justify-center max-md:items-end max-md:justify-end">
@@ -61,7 +65,9 @@ export default function Navbar() {
                                         key={nav.id}
                                         href={`/${nav.id}`}
                                         className={classNames(
-                                            'text-black bg-[#f9f9f9] hover:bg-gray-500 rounded-3xl px-6 py-2 text-sm font-medium transition ease-in duration-150 shadow',
+                                            nav.title === "Log In" ? 'hover:bg-green-500' : 'hover:bg-[#1C94AC]',
+                                            nav.title === "Log Out" ? 'hover:bg-red-500' : 'hover:bg-[#1C94AC]',
+                                            'text-black bg-[#f9f9f9] rounded-3xl px-6 py-2 text-sm font-medium transition ease-in duration-150 shadow',
                                         )}
                                         onClick={() => {
                                             if (nav.id === "login" && isLoggedIn) {

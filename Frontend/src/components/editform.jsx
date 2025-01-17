@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ToastContainer from './ToastContainer';
-import { Navigate } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from "axios";
 
-const Form = () => {
+const EditForm = () => {
+    const { id } = useParams();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [formData, setFormData] = useState({
         kategori: "",
         nama: "",
@@ -14,8 +16,11 @@ const Form = () => {
         tanggal: "",
         jam: "",
         pic: [],
+        tanggal_selesai: "",
+        jam_selesai: "",
+        status_kerja: "",
+        solusi_keterangan: "",
     });
-
     const [errors, setErrors] = useState({});
     const [toasts, setToasts] = useState([]);
 
@@ -29,17 +34,76 @@ const Form = () => {
         setToasts(toasts.filter((toast) => toast.id !== id));
     };
 
+    const formatDate = (isoDate) => {
+        if (!isoDate) return ""; // Jika tanggal null, kembalikan string kosong
+        const date = new Date(isoDate);
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
+        return `${year}-${month}-${day}`;
+    };
+
+    const formatTime = (timeString) => {
+        if (!timeString) return ""; // Jika jam null, kembalikan string kosong
+        const [hours, minutes, seconds] = timeString.split(":");
+        return `${hours}:${minutes}`;
+    };
+
+    const formatPic = (picString) => {
+        if (!picString) return []; // Jika pic null, kembalikan array kosong
+        return picString.replace(/[{}]/g, "").split(",").map(item => item.trim());;
+    };
+
+
     const handleChange = (e) => {
         const { id, value, multiple, selectedOptions } = e.target;
 
         if (multiple) {
-            // Collect selected values for multiple select
             const values = Array.from(selectedOptions).map((option) => option.value);
             setFormData((prev) => ({ ...prev, [id]: values }));
         } else {
             setFormData((prev) => ({ ...prev, [id]: value }));
         }
     };
+
+    useEffect(() => {
+        const loginStatus = sessionStorage.getItem("isLoggedIn");
+        setIsLoggedIn(loginStatus === "true");
+
+        const fetchData = async () => {
+            try {
+                const response = await fetch(`http://localhost:5433/data/${id}`); // Mengambil data
+                if (!response.ok) {
+                    throw new Error(`Error fetching job details: ${response.statusText}`);
+                }
+                const data = await response.json(); // Parse respons JSON
+                console.log("data diterima:\n");
+                console.log(data);
+                const [namaPelapor, teleponPelapor] = data.nama_pelapor_telepon.split(" - ");
+                setFormData({
+                    kategori: data.kategori_pekerjaan,
+                    nama: namaPelapor,
+                    telepon: teleponPelapor,
+                    divisi: data.divisi,
+                    lokasi: data.lokasi,
+                    detail: data.detail_pekerjaan,
+                    tanggal: formatDate(data.tanggal_awal),
+                    jam: formatTime(data.jam_awal),
+                    pic: formatPic(data.pic),
+                    tanggal_selesai: formatDate(data.tanggal_selesai),
+                    jam_selesai: formatTime(data.jam_selesai),
+                    status_kerja: data.status_kerja,
+                    solusi_keterangan: data.solusi_keterangan,
+                });
+
+            } catch (error) {
+                console.error("Error fetching job details:", error);
+            }
+        };
+
+        // Initial fetch
+        fetchData();
+    }, [id]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -116,7 +180,7 @@ const Form = () => {
                 tanggal_awal: `${tanggal_awal_full}.000Z`,
                 jam_awal: `${formData.jam}:00`,
                 status_kerja: "In Progress",
-                nama_pelapor_telepon: `${formData.nama} - ${formData.telepon}`,
+                nama_pelapor_telepon: formData.nama || formData.telepon,
                 divisi: formData.divisi || null,
                 lokasi: formData.lokasi || null,
                 kategori_pekerjaan: formData.kategori,
@@ -128,8 +192,8 @@ const Form = () => {
             };
 
             try {
-                const response = await fetch('http://localhost:5433/data/input', {
-                    method: 'POST',
+                const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -139,10 +203,10 @@ const Form = () => {
                 const result = await response.json();
 
                 if (response.ok) {
-                    console.log("Form submitted successfully!");
-                    addToast('success', 'Form submitted successfully!');
+                    console.log("Data updated successfully!");
+                    addToast('success', 'Data updated successfully!');
                     setTimeout(() => window.location.href = "/list", 1000);
-                    
+
                 } else {
                     console.log(`Error: ${result.message}`);
                     addToast('error', 'Failed to submit the form. Please try again.');
@@ -153,6 +217,9 @@ const Form = () => {
             }
         }
     };
+
+    
+    console.log("Selected PICs:", formData.pic);
 
 
     return (
@@ -442,6 +509,7 @@ const Form = () => {
                 {errors.pic && (
                     <p className="text-red-500 text-xs italic">{errors.pic}</p>
                 )}
+                <p className="pt-2 text-gray-500 text-xs">PIC masi sama seperti sebelumnya jika tidak dipilih yang baru</p>
             </div>
 
 
@@ -459,4 +527,4 @@ const Form = () => {
     );
 };
 
-export default Form;
+export default EditForm;

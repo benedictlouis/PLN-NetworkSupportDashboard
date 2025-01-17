@@ -1,26 +1,7 @@
-import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
-const Card = () => {
-    const [reports, setReports] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    // Mengambil data dari API
-    useEffect(() => {
-        const fetchReports = async () => {
-            try {
-                const response = await fetch("http://localhost:5433/data/all"); // Ganti dengan URL API Anda
-                const data = await response.json();
-                setReports(data); // Simpan data ke state
-            } catch (error) {
-                console.error("Error fetching reports:", error);
-            } finally {
-                setLoading(false); // Set loading menjadi false
-            }
-        };
-
-        fetchReports();
-    }, []);
+const Card = ({ reports }) => {
+    const [loading, setLoading] = useState(false);
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -28,11 +9,7 @@ const Card = () => {
         return date.toLocaleDateString('id-ID', options); // Format tanggal Indonesia
     };
 
-    if (loading) {
-        return <p>Loading...</p>;
-    }
-
-    if (reports.length === 0) {
+    if (!reports || reports.length === 0) {
         return <p>No reports found.</p>;
     }
 
@@ -45,8 +22,8 @@ const Card = () => {
                     </a>
                     <p className="mb-3 font-normal text-gray-500">
                         Tanggal Laporan: {formatDate(report.tanggal_awal)} <br />
-                        Jam Laporan: {report.jam_awal} WIB <br />
-                        Nama Pelapor: {report.nama_pelapor_telepon} <br />
+                        Jam Laporan: {report.jam_awal.replace(":00", "")} WIB <br />
+                        Pelapor: {report.nama_pelapor_telepon} <br />
                         Divisi: {report.divisi || "-"} <br />
                         Lokasi: {report.lokasi || "-"} <br />
                     </p>
@@ -63,7 +40,7 @@ const Card = () => {
 
                     <a
                         href={`http://localhost:5173/data/${report.id}`}
-                        className="inline-flex py-2 px-3 items-center text-sm font-medium text-center bg-[#1C94AC] text-white rounded-lg hover:bg-blue-700"
+                        className="inline-flex py-2 px-3 items-center text-sm font-medium text-center bg-[#1C94AC] text-white rounded-lg hover:bg-opacity-70"
                     >
                         Detail
                         <svg
@@ -86,6 +63,6 @@ const Card = () => {
             ))}
         </div>
     );
-}
+};
 
 export default Card;

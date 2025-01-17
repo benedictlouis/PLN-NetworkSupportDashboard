@@ -3,7 +3,7 @@ const { pool } = require('../config/db.config.js');
 // Get all data
 exports.getAllData = async (req, res) => {
     try {
-        const { rows } = await pool.query('SELECT * FROM network_support');
+        const { rows } = await pool.query('SELECT * FROM network_support ORDER BY id desc');
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });

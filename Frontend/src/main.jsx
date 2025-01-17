@@ -8,6 +8,7 @@ import LoginPage from './pages/loginpage';
 import ListPage from './pages/listpage';
 import DetailPage from './pages/detailpage';
 import AddPage from './pages/addpage';
+import EditPage from './pages/editpage';
 
 import './index.css';
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
@@ -21,6 +22,7 @@ const router = createBrowserRouter(
       <Route path="list" element={<ListPage />} />
       <Route path="data/:id" element={<DetailPage />} />
       <Route path="add" element={<AddPage />} />
+      <Route path="edit/:id" element={<EditPage />} />
     </Route>
   )
 );
