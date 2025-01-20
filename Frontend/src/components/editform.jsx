@@ -16,6 +16,7 @@ const EditForm = () => {
         tanggal: "",
         jam: "",
         pic: [],
+        status: "",
         tanggal_selesai: "",
         jam_selesai: "",
         status_kerja: "",
@@ -90,6 +91,7 @@ const EditForm = () => {
                     tanggal: formatDate(data.tanggal_awal),
                     jam: formatTime(data.jam_awal),
                     pic: formatPic(data.pic),
+                    status: data.status_kerja,
                     tanggal_selesai: formatDate(data.tanggal_selesai),
                     jam_selesai: formatTime(data.jam_selesai),
                     status_kerja: data.status_kerja,
@@ -180,7 +182,7 @@ const EditForm = () => {
                 tanggal_awal: `${tanggal_awal_full}.000Z`,
                 jam_awal: `${formData.jam}:00`,
                 status_kerja: "In Progress",
-                nama_pelapor_telepon: formData.nama || formData.telepon,
+                nama_pelapor_telepon: `${formData.nama} - ${formData.telepon}`,
                 divisi: formData.divisi || null,
                 lokasi: formData.lokasi || null,
                 kategori_pekerjaan: formData.kategori,
@@ -218,7 +220,7 @@ const EditForm = () => {
         }
     };
 
-    
+
     console.log("Selected PICs:", formData.pic);
 
 
@@ -512,6 +514,59 @@ const EditForm = () => {
                 <p className="pt-2 text-gray-500 text-xs">PIC masi sama seperti sebelumnya jika tidak dipilih yang baru</p>
             </div>
 
+            {/* Tanggal Selesai dan Jam Selesai */}
+            {formData.status === "Resolved" && (
+                <div className="flex -mx-3 mb-6">
+                    <div className="w-1/2 px-3">
+                    <label
+                        className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                        htmlFor="lokasi"
+                    >
+                        Waktu Selesai
+                    </label>
+                        <label
+                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            htmlFor="tanggal_selesai"
+                        >
+                            Tanggal Selesai
+                        </label>
+                        <input
+                            className="block w-full bg-white text-gray-700 border py-3 px-4 rounded"
+                            id="tanggal_selesai"
+                            type="date"
+                            value={formData.tanggal_selesai}
+                            onChange={handleChange}
+                        />
+                        {errors.tanggalSelesai && (
+                            <p className="text-red-500 text-xs italic">{errors.tanggal}</p>
+                        )}
+                    </div>
+                    <div className="w-1/2 px-3">
+                    <label
+                        className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                        htmlFor="lokasi"
+                    >
+                        <br />
+                    </label>
+                        <label
+                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            htmlFor="jam_selesai"
+                        >
+                            Jam Selesai
+                        </label>
+                        <input
+                            className="block w-full bg-white text-gray-700 border py-3 px-4 rounded"
+                            id="jam_selesai"
+                            type="time"
+                            value={formData.jam_selesai}
+                            onChange={handleChange}
+                        />
+                        {errors.jamSelesai && (
+                            <p className="text-red-500 text-xs italic">{errors.jam}</p>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Submit Button */}
             <div className="">

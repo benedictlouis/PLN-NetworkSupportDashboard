@@ -13,6 +13,7 @@ const Detail = () => {
     const navigate = useNavigate();
     const [toasts, setToasts] = useState([]);
     const [showDone, setShowDone] = useState(false); // State untuk form
+    const [existingData, setExistingData] = useState({}); 
 
     const addToast = (type, message) => {
         const id = new Date().getTime();
@@ -42,7 +43,7 @@ const Detail = () => {
         const loginStatus = sessionStorage.getItem("isLoggedIn");
         setIsLoggedIn(loginStatus === "true");
 
-        const fetchData = () => {
+        const fetchData = async () => {
             axios
                 .get(`http://localhost:5433/data/${id}`)
                 .then((response) => {
@@ -53,6 +54,8 @@ const Detail = () => {
                     console.error("Error fetching job details:", error);
                     setLoading(false);
                 });
+
+                setExistingData(data);
 
             axios
                 .get(`http://localhost:5433/data/durations`)
@@ -72,6 +75,8 @@ const Detail = () => {
 
         // Initial fetch
         fetchData();
+
+
     }, [id]);
 
     if (loading) {
@@ -111,7 +116,64 @@ const Detail = () => {
         setData(updatedData);
         setShowDone(false);
         addToast("success", "Pekerjaan berhasil diselesaikan!");
+        setTimeout(() => window.location.href = `/list`, 2000);
     };
+
+    const handleMarkAsInProgress = async () => {
+        try {
+            const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ...existingData,
+                    status_kerja: "In Progress",
+                    solusi_keterangan: null, // Menghapus data solusi
+                    tanggal_selesai: null, // Menghapus tanggal selesai
+                    jam_selesai: null, // Menghapus jam selesai
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to update status to In Progress");
+            }
+    
+            const data = await response.json();
+            addToast("success", "Status pekerjaan berhasil diubah");
+            setTimeout(() => window.location.href = `/list`, 2000);
+        } catch (error) {
+            addToast("error", "Gagal mengubah status pekerjaan");
+        }
+    };
+    
+    const handleMarkAsPending = async () => {
+        try {
+            const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ...existingData,
+                    status_kerja: "Pending",
+                    solusi_keterangan: null, // Menghapus data solusi
+                    tanggal_selesai: null, // Menghapus tanggal selesai
+                    jam_selesai: null, // Menghapus jam selesai
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to update status to Pending");
+            }
+    
+            const data = await response.json();
+            addToast("success", "Status pekerjaan berhasil diubah");
+            setTimeout(() => window.location.href = `/list`, 2000);
+        } catch (error) {
+            addToast("error", "Gagal mengubah status pekerjaan");
+        }
+    };    
 
     // Format tanggal menjadi "12 Desember 2024"
     const formatDate = (date) => {
@@ -126,7 +188,7 @@ const Detail = () => {
         return `${formattedTime} WIB`;
     };
 
-    if(data.pic === null) {
+    if (data.pic === null) {
         data.pic = "Tidak ada PIC";
     }
 
@@ -220,27 +282,57 @@ const Detail = () => {
                 </div>
 
                 {isLoggedIn && (
-                    <div className="mt-8 ease-in transition-all duration-300">
-                        <button
-                            onClick={handleEdit}
-                            className="mr-4 px-4 py-2 bg-black text-white rounded hover:bg-blue-700 hover:outline-none"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={handleDelete}
-                            className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
-                        >
-                            Delete
-                        </button>
-                        {!data.solusi_keterangan || !data.tanggal_selesai ? (
+                    <div className="mt-8 ease-in transition-all duration-300 flex justify-between items-center">
+                        {/* Tombol di kiri */}
+                        <div>
                             <button
-                                onClick={handleMarkAsCompleted}
-                                className="mx-4 mt-4 px-4 py-2 bg-black text-white rounded hover:bg-green-700"
+                                onClick={handleEdit}
+                                className="mr-4 px-4 py-2 bg-black text-white rounded hover:bg-blue-700 hover:outline-none"
                             >
-                                Selesai
+                                Edit
                             </button>
-                        ) : null}
+                            <button
+                                onClick={handleDelete}
+                                className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
+                            >
+                                Delete
+                            </button>
+                        </div>
+
+                        {/* Tombol di kanan */}
+                        <div className="flex gap-4">
+                            {/* Tombol Selesai */}
+                            {data.status_kerja !== "Resolved" && (
+                                <button
+                                    onClick={handleMarkAsCompleted}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-green-700"
+                                >
+                                    Selesai
+                                </button>
+                            )}
+
+                            {/* Tombol In Progress */}
+                            {data.status_kerja !== "In Progress" && (
+                                <button
+                                    onClick={handleMarkAsInProgress}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-yellow-700"
+                                >
+                                    In Progress
+                                </button>
+                            )}
+
+                            {/* Tombol Pending */}
+                            {data.status_kerja !== "Pending" && (
+                                <button
+                                    onClick={handleMarkAsPending}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
+                                >
+                                    Pending
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Modal untuk selesai */}
                         {showDone && (
                             <Done
                                 existingData={data}
@@ -249,9 +341,9 @@ const Detail = () => {
                                 onSuccess={handleSuccessMarkAsSelesai}
                             />
                         )}
-
                     </div>
                 )}
+
             </div>
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </div>
