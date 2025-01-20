@@ -23,7 +23,7 @@ const DurationsByCategory = ({ data }) => {
             data: data.map(d => d.avg_duration_minutes),
             type: 'bar',
             smooth: false,
-            color: '#FF7043',
+            color: '#0747a1',
             label: {
                 show: true,
                 position: 'top',
@@ -32,7 +32,7 @@ const DurationsByCategory = ({ data }) => {
         }],
     };
 
-    return <ReactECharts option={chartOptions} style={{ height: '400px', width: '100%' }} />;
+    return <ReactECharts option={chartOptions} style={{ height: '300px', width: '100%' }} />;
 };
 
 export default DurationsByCategory;

@@ -35,11 +35,12 @@ const Durations = ({ data }) => {
       data: data.map(d => d.duration_minutes),
       type: 'line',
       smooth: false,
-      areaStyle: { color: 'rgba(64, 158, 255, 0.3)' },
+      lineStyle: { color: '#0747a1' },
+      areaStyle: { color: '#1065c0' },
     }],
   };
 
-  return <ReactECharts option={chartOptions} style={{ height: '400px', width: '100%' }} />;
+  return <ReactECharts option={chartOptions} style={{ height: '300px', width: '100%' }} />;
 };
 
 export default Durations;

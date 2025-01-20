@@ -32,8 +32,8 @@ const JobsPerMonth = ({ data }) => {
             data: data.map(d => d.total_jobs),
             type: 'line',
             smooth: true,
-            areaStyle: { color: 'rgba(255, 140, 0, 0.3)' },
-            lineStyle: { color: '#FF8C00' },
+            areaStyle: { color: '#0747a1' },
+            lineStyle: { color: '#1065c0' },
         }],
     };
 

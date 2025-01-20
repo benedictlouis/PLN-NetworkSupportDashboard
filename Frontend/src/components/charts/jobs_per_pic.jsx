@@ -5,9 +5,8 @@ const JobsPerPic = ({ data }) => {
   // Transform data to match the required chart format
   const transformJobsPerPicData = (data) => {
     const categories = [
-      'WiFi', 'LAN', 'Whitelist', 'User Access', 'Data Center',
-      'WAN', 'Monitoring', 'Pendampingan', 'Pembuatan Laporan/Prosedur/SOP',
-      'Konfigurasi', 'Rapat',
+      'WiFi', 'LAN', 'Whitelist', 'User Access', 'WAN',
+      'Monitoring', 'Pendampingan', 'Pembuatan Laporan/Prosedur/SOP', 'Konfigurasi', 'Rapat',
     ];
 
     const picNames = [...new Set(data.map(item => item.pic_name))];
@@ -44,17 +43,16 @@ const JobsPerPic = ({ data }) => {
       bottom: 0,
     },
     color: [
-      '#00008B', // WiFi
-      '#00FFFF', // LAN
-      '#FF5B00', // Whitelist
-      '#FFA07A', // User Access
-      '#0000FF', // Data Center
-      '#3BA272', // WAN
-      '#FFDF00', // Monitoring
-      '#9A60B4', // Pendampingan
-      '#EA7CCC', // Pembuatan Laporan/Prosedur/SOP
-      '#FF0000', // Konfigurasi
-      '#800000', // Rapat
+      '#0747a1', 
+      '#1065c0', 
+      '#1477d2', 
+      '#1a8ae5', 
+      '#1e97f3', 
+      '#41a7f5', 
+      '#64b7f6', 
+      '#90cbf9',
+      '#bbdffb',
+      '#CBDCEB',
     ],
     xAxis: {
       type: 'category',

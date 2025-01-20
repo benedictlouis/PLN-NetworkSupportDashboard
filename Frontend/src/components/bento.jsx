@@ -51,26 +51,26 @@ const Bento = () => {
     }, []);
 
     return (
-        <div className="grid h-full w-full grid-cols-5 grid-rows-4 gap-4">
-            <div className="col-span-3 row-span-2 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
+        <div className="grid h-full w-full grid-cols-10 grid-rows-4 gap-6">
+            <div className="col-span-5 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <DurationsByCategory data={durationsByCategoryData} /> 
             </div>
-            <div className="col-span-2 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
+            <div className="col-span-5 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <Durations data={durationsData} /> 
             </div>
-            <div className="col-span-2 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
+            <div className="col-span-5 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <JobCategories data={jobCategories} /> 
             </div>
-            <div className="col-span-2 row-span-2 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-                <JobsPerPic data={jobsPerPicData} /> 
-            </div>
-            <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-                <AverageDurations data={picPercentageData} />
-            </div>
-            <div className="col-span-2 row-span-2 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
+            <div className="col-span-5 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <StatusDistribution data={statusDistributionData} /> 
             </div>
-            <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
+            <div className="col-span-10 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
+                <JobsPerPic data={jobsPerPicData} /> 
+            </div>
+            {/* <div className="col-span-5 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
+                <AverageDurations data={picPercentageData} />
+            </div> */}
+            <div className="col-span-10 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <JobsPerMonths data={jobsPerMonthData} />
             </div>
         </div>
