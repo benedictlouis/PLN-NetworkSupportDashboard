@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const datacontroller = require('../controllers/data_controller.js');
+const dataController = require('../controllers/data_controller.js');
 
 // Route untuk login
-router.get('/all', datacontroller.getAllData);
-router.get('/durations', datacontroller.getDurations);
-router.get('/:id', datacontroller.getDataById);
-router.post('/input', datacontroller.addData);
-router.put('/edit/:id', datacontroller.updateData);
-router.delete('/delete/:id', datacontroller.deleteData);
+router.get('/all', dataController.getAllData);
+router.get('/durations', dataController.getDurations);
+router.get('/:id', dataController.getDataById);
+router.post('/input', dataController.addData);
+router.put('/edit/:id', dataController.updateData);
+router.delete('/delete/:id', dataController.deleteData);
 
 
 module.exports = router;
