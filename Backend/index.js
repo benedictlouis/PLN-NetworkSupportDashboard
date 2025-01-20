@@ -14,9 +14,13 @@ app.use(cors());
 
 const userRoutes = require("./routes/user_routes.js");
 const dataRoutes = require("./routes/data_routes.js");
+const chartRoutes = require("./routes/chart_routes.js");
+
 
 app.use("/user", userRoutes);
 app.use("/data", dataRoutes);
+app.use("/chart", chartRoutes);
+
 
 pool.connect(() => {    
     console.log("Connected to database");

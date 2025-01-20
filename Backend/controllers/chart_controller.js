@@ -24,6 +24,7 @@ exports.getDurations = async (req, res) => {
   }
 };
 
+// chart_controller.js
 exports.getDurationsByCategory = async (req, res) => {
   try {
     const result = await pool.query(`
@@ -50,6 +51,7 @@ exports.getDurationsByCategory = async (req, res) => {
     res.status(500).json({ message: 'Error fetching durations' });
   }
 };
+
 
 exports.jobCategories = async (req, res) => {
   try {
