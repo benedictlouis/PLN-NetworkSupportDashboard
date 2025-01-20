@@ -21,19 +21,6 @@ const AverageDurations = ({ data }) => {
       type: 'bar',
       color: '#409EFF',
     }],
-    dataZoom: [
-      {
-        type: 'slider',
-        show: true,
-        xAxisIndex: [0],
-        start: 0,
-        end: 100,
-      },
-      {
-        type: 'inside',
-        xAxisIndex: [0],
-      },
-    ],
   };
 
   return <ReactECharts option={ChartOptions} style={{ height: '400px', width: '100%' }} />;

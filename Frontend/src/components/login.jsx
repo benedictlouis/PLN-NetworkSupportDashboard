@@ -43,7 +43,7 @@ const Login = () => {
             if (response.ok) {
                 sessionStorage.setItem("isLoggedIn", true);
                 addToast('success', 'Logged in successfully');
-                setTimeout(() => window.location.href = "/", 2000);
+                // setTimeout(() => window.location.href = "/", 2000);
             } else {
                 addToast('error', 'Username or password is incorrect');
             }

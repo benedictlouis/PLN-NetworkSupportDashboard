@@ -4,10 +4,10 @@ import Bento from "../components/bento";
 
 const MainPage = () => {
     return (
-        <div className="w-auto h-full relative bg-[#fafafa] pt-2">
+        <div className="w-screen min-h-screen relative bg-[#fafafa] pt-2">
             <Navbar />
 
-            <div className=" flex flex-col items-center justify-center h-screen w-screen flex-row items-center justify-center pl-6 pr-6 pt-6 pb-6">
+            <div className=" flex flex-col items-center justify-center h-full w-screen flex-row items-center justify-center pl-6 pr-6 pt-6 pb-6">
                 {/* <h1 className="biru-pln ">ZOOM LICENSE DASHBOARD</h1> */}
                 {/* <Pie /> */}
 

@@ -42,4 +42,4 @@ const Durations = ({ data }) => {
   return <ReactECharts option={chartOptions} />;
 };
 
-export default DurationsChart;
+export default Durations;

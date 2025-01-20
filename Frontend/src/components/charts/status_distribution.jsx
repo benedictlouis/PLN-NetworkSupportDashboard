@@ -9,7 +9,7 @@ const StatusDistribution = ({ data }) => {
         series: [{
             type: 'pie',
             radius: '50%',
-            data: statusDistributionData.map(d => ({
+            data: data.map(d => ({
                 value: d.total_jobs,
                 name: d.status_kerja,
                 itemStyle: {

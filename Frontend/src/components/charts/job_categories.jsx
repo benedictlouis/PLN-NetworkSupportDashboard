@@ -20,7 +20,7 @@ const JobCategories = ({ data }) => {
               name: 'Job Categories',
               type: 'pie',
               radius: '50%',
-              data: jobCategories.map(cat => ({
+              data: data.map(cat => ({
                 value: cat.total_jobs,
                 name: cat.kategori_pekerjaan,
               })),
