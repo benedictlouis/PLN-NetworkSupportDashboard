@@ -13,16 +13,12 @@ const StatusDistribution = ({ data }) => {
 
     const chartOptions = {
         title: {
-            text: 'Job Status Distribution',
+            text: 'Total Pekerjaan per Status',
             left: 'center',
         },
         tooltip: {
             trigger: 'item',
             formatter: '{b}: {c} jobs ({d}%)',
-        },
-        legend: {
-            bottom: 10,
-            left: 'center',
         },
         series: [
             {

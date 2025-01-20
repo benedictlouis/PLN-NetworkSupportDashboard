@@ -23,16 +23,12 @@ const JobCategories = ({ data }) => {
 
   const chartOptions = {
     title: {
-      text: 'Job Categories Distribution',
+      text: 'Total Pekerjaan per Kategori',
       left: 'center',
     },
     tooltip: {
       trigger: 'item',
       formatter: '{b}: {c} jobs ({d}%)',
-    },
-    legend: {
-      orient: 'vertical',
-      left: 'left',
     },
     series: [
       {

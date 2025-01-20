@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 
 const Durations = ({ data }) => {
   const chartOptions = {
-    title: { text: 'Durations (Minutes)', left: 'center' },
+    title: { text: 'Durasi Pekerjaan (Menit)', left: 'center' },
     tooltip: {
       trigger: 'axis',
       formatter: (params) => {
@@ -15,7 +15,7 @@ const Durations = ({ data }) => {
       type: 'category', 
       data: data.map(d => `Task ${d.id}`),
     },
-    yAxis: { type: 'value', name: 'Duration (minutes)' },
+    yAxis: { type: 'value',  },
     dataZoom: [
       {
         type: 'slider',

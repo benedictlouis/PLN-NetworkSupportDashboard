@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 
 const DurationsByCategory = ({ data }) => {
     const chartOptions = {
-        title: { text: 'Durations by Category (Minutes)', left: 'center' },
+        title: { text: ' Rata-rata Durasi Pekerjaan per Kategori (Menit)', left: 'center' },
         tooltip: {
             trigger: 'axis',
             formatter: (params) => {
@@ -16,8 +16,6 @@ const DurationsByCategory = ({ data }) => {
             data: data.map(d => d.kategori_pekerjaan),
         },
         yAxis: { 
-            type: 'value', 
-            name: 'Avg Duration (minutes)' 
         },
         series: [{
             data: data.map(d => d.avg_duration_minutes),

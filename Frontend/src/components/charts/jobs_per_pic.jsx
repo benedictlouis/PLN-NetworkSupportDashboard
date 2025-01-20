@@ -27,7 +27,7 @@ const JobsPerPic = ({ data }) => {
   const { categories, picNames, series } = transformJobsPerPicData(data);
 
   const chartOptions = {
-    title: { text: 'Jobs per PIC by Category', left: 'center' },
+    title: { text: 'Total Pekerjaan Per PIC', left: 'center' },
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },

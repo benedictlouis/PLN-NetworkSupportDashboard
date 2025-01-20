@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 
 const JobsPerMonth = ({ data }) => {
     const chartOptions = {
-        title: { text: 'Jobs per Month', left: 'center' },
+        title: { text: 'Total Pekerjaan per Bulan', left: 'center' },
         tooltip: { trigger: 'axis' },
         xAxis: { 
             type: 'category', 
