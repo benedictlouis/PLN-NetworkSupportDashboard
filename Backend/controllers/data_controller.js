@@ -137,3 +137,53 @@ exports.getDurations = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error: err.message });
     }
 };
+
+exports.getJobSummary = async (req, res) => {
+    try {
+        const totalJobsQuery = 'SELECT COUNT(*) AS total_jobs FROM network_support';
+        const unfinishedJobsQuery = "SELECT COUNT(*) AS unfinished_jobs FROM network_support WHERE status_kerja != 'Resolved'";
+
+        const totalJobsResult = await pool.query(totalJobsQuery);
+        const unfinishedJobsResult = await pool.query(unfinishedJobsQuery);
+
+        res.status(200).json({
+            total_jobs: parseInt(totalJobsResult.rows[0].total_jobs, 10),
+            unfinished_jobs: parseInt(unfinishedJobsResult.rows[0].unfinished_jobs, 10)
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+exports.getUnfinishedJobsByCategory = async (req, res) => {
+    try {
+        const query = `
+            SELECT kategori_pekerjaan, COUNT(*) AS total_jobs 
+            FROM network_support 
+            WHERE status_kerja != 'Resolved' 
+            GROUP BY kategori_pekerjaan
+            ORDER BY total_jobs DESC
+        `;
+        const { rows } = await pool.query(query);
+
+        res.status(200).json(rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+exports.getJobsByStatus = async (req, res) => {
+    try {
+        const query = `
+            SELECT status_kerja, COUNT(*) AS total_jobs 
+            FROM network_support 
+            GROUP BY status_kerja
+            ORDER BY total_jobs DESC
+        `;
+        const { rows } = await pool.query(query);
+
+        res.status(200).json(rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
