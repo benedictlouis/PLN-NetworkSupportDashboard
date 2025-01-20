@@ -110,7 +110,6 @@ exports.deleteData = async (req, res) => {
 
 exports.getDurations = async (req, res) => {
     try {
-        console.log("Fetching durations...");
         const result = await pool.query(`
             SELECT 
                 id,

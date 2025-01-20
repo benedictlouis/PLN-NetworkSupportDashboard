@@ -40,44 +40,38 @@ const Detail = () => {
     };
 
     useEffect(() => {
+        if (data) {
+            setExistingData(data);
+        }
+    }, [data]);    
+
+    useEffect(() => {
         const loginStatus = sessionStorage.getItem("isLoggedIn");
         setIsLoggedIn(loginStatus === "true");
-
+        
         const fetchData = async () => {
-            axios
-                .get(`http://localhost:5433/data/${id}`)
-                .then((response) => {
-                    setData(response.data);
-                    setLoading(false);
-                })
-                .catch((error) => {
-                    console.error("Error fetching job details:", error);
-                    setLoading(false);
-                });
-
-                setExistingData(data);
-
-            axios
-                .get(`http://localhost:5433/data/durations`)
-                .then((response) => {
-                    const durations = response.data;
-                    const matchingDuration = durations.find((item) => item.id === parseInt(id));
-                    if (matchingDuration) {
-                        const formattedDuration = formatDuration(matchingDuration.duration_minutes);
-                        setDuration(formattedDuration);
-                        console.log("Duration:", formattedDuration);
-                    }
-                })
-                .catch((error) => {
-                    console.error("Error fetching durations:", error);
-                });
+            try {
+                const response = await axios.get(`http://localhost:5433/data/${id}`);
+                const fetchedData = response.data;
+                setData(fetchedData);
+                setExistingData(fetchedData);
+                setLoading(false);
+    
+                const durationsResponse = await axios.get(`http://localhost:5433/data/durations`);
+                const durations = durationsResponse.data;
+                const matchingDuration = durations.find((item) => item.id === parseInt(id));
+                if (matchingDuration) {
+                    const formattedDuration = formatDuration(matchingDuration.duration_minutes);
+                    setDuration(formattedDuration);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                setLoading(false);
+            }
         };
-
-        // Initial fetch
+    
         fetchData();
-
-
-    }, [id]);
+    }, [id, data]);    
 
     if (loading) {
         return <div>Loading...</div>;
@@ -116,22 +110,19 @@ const Detail = () => {
         setData(updatedData);
         setShowDone(false);
         addToast("success", "Pekerjaan berhasil diselesaikan!");
-        setTimeout(() => window.location.href = `/list`, 2000);
     };
 
     const handleMarkAsInProgress = async () => {
         try {
             const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...existingData,
                     status_kerja: "In Progress",
-                    solusi_keterangan: null, // Menghapus data solusi
-                    tanggal_selesai: null, // Menghapus tanggal selesai
-                    jam_selesai: null, // Menghapus jam selesai
+                    solusi_keterangan: null,
+                    tanggal_selesai: null,
+                    jam_selesai: null,
                 }),
             });
     
@@ -139,13 +130,13 @@ const Detail = () => {
                 throw new Error("Failed to update status to In Progress");
             }
     
-            const data = await response.json();
+            const updatedData = await response.json();
+            setData(updatedData); // Pastikan server mengembalikan semua properti data
             addToast("success", "Status pekerjaan berhasil diubah");
-            setTimeout(() => window.location.href = `/list`, 2000);
         } catch (error) {
             addToast("error", "Gagal mengubah status pekerjaan");
         }
-    };
+    };    
     
     const handleMarkAsPending = async () => {
         try {
@@ -169,7 +160,6 @@ const Detail = () => {
     
             const data = await response.json();
             addToast("success", "Status pekerjaan berhasil diubah");
-            setTimeout(() => window.location.href = `/list`, 2000);
         } catch (error) {
             addToast("error", "Gagal mengubah status pekerjaan");
         }
@@ -277,7 +267,7 @@ const Detail = () => {
                 <div className="mt-4">
                     <div className="text-gray-700">
                         <p className="text-sm text-gray-500">PIC</p>
-                        <p className="text-gray-700">{data.pic.replace(/{|}/g, "").replace(/,/g, ", ")}</p>
+                        <p className="text-gray-700">{data?.pic ? data.pic.replace(/{|}/g, "").replace(/,/g, ", ") : "Tidak ada PIC"}</p>
                     </div>
                 </div>
 
