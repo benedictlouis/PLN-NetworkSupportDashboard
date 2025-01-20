@@ -7,7 +7,7 @@ const JobsPerMonth = ({ data }) => {
         tooltip: { trigger: 'axis' },
         xAxis: { 
             type: 'category', 
-            data: jobsPerMonthData.map(d => d.month_year),
+            data: data.map(d => d.month_year),
         },
         yAxis: { 
             type: 'value', 
@@ -19,17 +19,17 @@ const JobsPerMonth = ({ data }) => {
             show: true,
             xAxisIndex: 0,
             start: 0,
-            end: Math.min(100, (10 / jobsPerMonthData.length) * 100),
+            end: Math.min(100, (10 / data.length) * 100), 
           },
           {
             type: 'inside',
             xAxisIndex: 0,
             start: 0,
-            end: Math.min(100, (10 / jobsPerMonthData.length) * 100),
+            end: Math.min(100, (10 / data.length) * 100), 
           },
         ],
         series: [{
-            data: jobsPerMonthData.map(d => d.total_jobs),
+            data: data.map(d => d.total_jobs),
             type: 'line',
             smooth: true,
             areaStyle: { color: 'rgba(255, 140, 0, 0.3)' },
@@ -37,7 +37,7 @@ const JobsPerMonth = ({ data }) => {
         }],
     };
 
-    return <ReactECharts option={chartOptions} />;
+    return <ReactECharts option={chartOptions} style={{ height: '400px', width: '100%' }} />;
 };
 
 export default JobsPerMonth;

@@ -13,14 +13,14 @@ const DurationsByCategory = ({ data }) => {
         },
         xAxis: { 
             type: 'category', 
-            data: data.map(d => d.category),
+            data: data.map(d => d.kategori_pekerjaan),
         },
         yAxis: { 
             type: 'value', 
             name: 'Avg Duration (minutes)' 
         },
         series: [{
-            data: data.map(d => d.duration_minutes),
+            data: data.map(d => d.avg_duration_minutes),
             type: 'bar',
             smooth: false,
             color: '#FF7043',
@@ -32,7 +32,7 @@ const DurationsByCategory = ({ data }) => {
         }],
     };
 
-    return <ReactECharts option={chartOptions} />;
+    return <ReactECharts option={chartOptions} style={{ height: '400px', width: '100%' }} />;
 };
 
 export default DurationsByCategory;

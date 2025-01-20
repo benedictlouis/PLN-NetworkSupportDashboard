@@ -10,7 +10,6 @@ import StatusDistribution from './charts/status_distribution';
 
 const Bento = () => {
     const [durationsByCategoryData, setDurationsByCategoryData] = useState([]);
-    const [averageDurations, setAverageDurations] = useState([]);
     const [durationsData, setDurationsData] = useState([]);
     const [jobCategories, setJobCategories] = useState([]);
     const [jobsPerPicData, setJobsPerPicData] = useState([]);
@@ -20,16 +19,15 @@ const Bento = () => {
 
     useEffect(() => {
         axios.get('http://localhost:5433/chart/duration-by-category')
-            .then(response => setDurationsByCategoryData(response.data))
+            .then(response => {
+                console.log ('API response: ', response.data)
+                setDurationsByCategoryData(response.data)
+            })
             .catch(error => console.error('Error fetching durations by category:', error));
         
-            axios.get('http://localhost:5433/chart/durations')
+        axios.get('http://localhost:5433/chart/durations')
             .then(response => setDurationsData(response.data))
             .catch(error => console.error('Error fetching durations:', error));
-
-        axios.get('http://localhost:5433/chart/average-durations')
-            .then(response => setAverageDurations(response.data))
-            .catch(error => console.error('Error fetching average durations:', error));
 
         axios.get('http://localhost:5433/chart/job-categories')
             .then(response => setJobCategories(response.data))
@@ -58,22 +56,22 @@ const Bento = () => {
                 <DurationsByCategory data={durationsByCategoryData} /> 
             </div>
             <div className="col-span-2 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-                {/* <Durations data={durationsData} />  */}
+                <Durations data={durationsData} /> 
             </div>
             <div className="col-span-2 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-                {/* <JobCategories data={jobCategories} />  */}
+                <JobCategories data={jobCategories} /> 
             </div>
             <div className="col-span-2 row-span-2 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-                {/* <JobsPerPic data={jobsPerPicData} />  */}
+                <JobsPerPic data={jobsPerPicData} /> 
             </div>
             <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-                {/* <JobsPerPic data={picPercentageData} />  */}
+                <AverageDurations data={picPercentageData} />
             </div>
             <div className="col-span-2 row-span-2 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-                {/* <StatusDistribution data={statusDistributionData} />  */}
+                <StatusDistribution data={statusDistributionData} /> 
             </div>
             <div className="col-span-1 row-span-1 bg-gray-200 rounded-3xl flex justify-center items-center text-black py-4 px-4">
-            
+                <JobsPerMonths data={jobsPerMonthData} />
             </div>
         </div>
     );

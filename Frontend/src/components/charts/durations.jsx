@@ -39,7 +39,7 @@ const Durations = ({ data }) => {
     }],
   };
 
-  return <ReactECharts option={chartOptions} />;
+  return <ReactECharts option={chartOptions} style={{ height: '400px', width: '100%' }} />;
 };
 
 export default Durations;

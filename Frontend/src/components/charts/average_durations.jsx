@@ -2,7 +2,7 @@ import React from 'react';
 import ReactECharts from 'echarts-for-react';
 
 const AverageDurations = ({ data }) => {
-  const ChartOptions = {
+  const chartOptions = {
     title: { text: 'Average Task Durations by Category', left: 'center' },
     tooltip: {
       trigger: 'axis',
@@ -23,7 +23,7 @@ const AverageDurations = ({ data }) => {
     }],
   };
 
-  return <ReactECharts option={ChartOptions} style={{ height: '400px', width: '100%' }} />;
+  return <ReactECharts option={chartOptions} style={{ height: '400px', width: '100%' }} />;
 };
 
 export default AverageDurations;
