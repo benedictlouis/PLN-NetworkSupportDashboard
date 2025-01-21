@@ -118,7 +118,6 @@ const Detail = () => {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    ...existingData,
                     status_kerja: "In Progress",
                     solusi_keterangan: null,
                     tanggal_selesai: null,
@@ -131,7 +130,7 @@ const Detail = () => {
             }
     
             const updatedData = await response.json();
-            setData(updatedData); // Pastikan server mengembalikan semua properti data
+            setData(updatedData);
             addToast("success", "Status pekerjaan berhasil diubah");
         } catch (error) {
             addToast("error", "Gagal mengubah status pekerjaan");
@@ -146,7 +145,6 @@ const Detail = () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    ...existingData,
                     status_kerja: "Pending",
                     solusi_keterangan: null, // Menghapus data solusi
                     tanggal_selesai: null, // Menghapus tanggal selesai

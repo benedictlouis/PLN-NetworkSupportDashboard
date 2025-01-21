@@ -68,6 +68,36 @@ exports.updateData = async (req, res) => {
     } = req.body;
 
     try {
+        // Ambil data lama dari database
+        const { rows: existingData } = await pool.query('SELECT * FROM network_support WHERE id = $1', [id]);
+
+        if (!existingData.length) {
+            return res.status(404).json({ message: 'Data not found' });
+        }
+
+        // Data lama
+        const oldData = existingData[0];
+
+        // Gunakan data lama jika tidak ada nilai baru
+        const updatedData = {
+            minggu: minggu ?? oldData.minggu,
+            bulan: bulan ?? oldData.bulan,
+            tahun: tahun ?? oldData.tahun,
+            tanggal_awal: tanggal_awal ?? oldData.tanggal_awal,
+            jam_awal: jam_awal ?? oldData.jam_awal,
+            status_kerja: status_kerja ?? oldData.status_kerja,
+            nama_pelapor_telepon: nama_pelapor_telepon ?? oldData.nama_pelapor_telepon,
+            divisi: divisi ?? oldData.divisi,
+            lokasi: lokasi ?? oldData.lokasi,
+            kategori_pekerjaan: kategori_pekerjaan ?? oldData.kategori_pekerjaan,
+            detail_pekerjaan: detail_pekerjaan ?? oldData.detail_pekerjaan,
+            pic: pic ?? oldData.pic,
+            solusi_keterangan: solusi_keterangan ?? oldData.solusi_keterangan,
+            tanggal_selesai: tanggal_selesai ?? oldData.tanggal_selesai,
+            jam_selesai: jam_selesai ?? oldData.jam_selesai,
+        };
+
+        // Query update dengan data yang telah diperbarui
         const query = `
             UPDATE network_support SET
                 minggu = $1, bulan = $2, tahun = $3, tanggal_awal = $4, jam_awal = $5, status_kerja = $6,
@@ -76,9 +106,10 @@ exports.updateData = async (req, res) => {
             WHERE id = $16
         `;
         const values = [
-            minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
-            nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, id
+            updatedData.minggu, updatedData.bulan, updatedData.tahun, updatedData.tanggal_awal, updatedData.jam_awal,
+            updatedData.status_kerja, updatedData.nama_pelapor_telepon, updatedData.divisi, updatedData.lokasi,
+            updatedData.kategori_pekerjaan, updatedData.detail_pekerjaan, updatedData.pic,
+            updatedData.solusi_keterangan, updatedData.tanggal_selesai, updatedData.jam_selesai, id
         ];
 
         const result = await pool.query(query, values);
@@ -91,6 +122,7 @@ exports.updateData = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 // Delete data by ID
 exports.deleteData = async (req, res) => {

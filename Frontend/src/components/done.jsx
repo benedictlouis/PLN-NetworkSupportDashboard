@@ -26,7 +26,6 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
         }
 
         const updatedData = {
-            ...existingData,
             solusi_keterangan: formData.solusi,
             tanggal_selesai: `${formData.tanggal_selesai}T${formData.jam_selesai}:00.000Z`,
             jam_selesai: `${formData.jam_selesai}:00`,
