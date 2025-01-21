@@ -97,9 +97,14 @@ const Bento = () => {
             </div>
 
             <div className="col-span-2 row-span-1 bg-gray-100 rounded-3xl flex flex-col justify-center items-center text-black py-4 px-4 shadow">
-                {/* <h2 className="text-xl font-semibold mb-4">Jobs by Status</h2> */}
                 <div className="flex flex-row gap-x-20 max-md:gap-x-6">
-                    {sumStatusData.map((status, index) => {
+                    {["resolved", "in progress", "pending"].map((statusName) => {
+                        // Cari status dari sumStatusData
+                        const status = sumStatusData.find(
+                            (item) => item.status_kerja.toLowerCase() === statusName
+                        ) || { status_kerja: statusName, total_jobs: 0 };
+
+                        // Tentukan warna berdasarkan status
                         let bgColor;
                         switch (status.status_kerja.toLowerCase()) {
                             case "resolved":
@@ -116,14 +121,14 @@ const Bento = () => {
                         }
 
                         return (
-                            <div key={index} className="flex flex-col items-center ">
+                            <div key={status.status_kerja} className="flex flex-col items-center ">
                                 <p className="mt-2 mb-2 text-lg max-md:text-xs text-center font-medium">
                                     {status.status_kerja}
                                 </p>
                                 <div
                                     className={`flex items-center justify-center rounded-full font-bold text-8xl max-md:text-4xl ${bgColor}`}
                                 >
-                                    {status.total_jobs}
+                                    {status.total_jobs || 0}
                                 </div>
                             </div>
                         );

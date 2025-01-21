@@ -5,7 +5,7 @@ export const navLinks = [
     },
     {
       id: "list",
-      title: "List",
+      title: "Daftar Pekerjaan",
     },
     {
       id: "login",

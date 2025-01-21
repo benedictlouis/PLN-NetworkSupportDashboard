@@ -36,7 +36,6 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
         axios
             .put(`http://localhost:5433/data/edit/${id}`, updatedData)
             .then((response) => {
-                setTimeout(() => window.location.href = `/data/${id}`, 2000);
                 onSuccess(response.data);
                 onClose();
             })
