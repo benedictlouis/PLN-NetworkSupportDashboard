@@ -70,7 +70,7 @@ const Bento = () => {
             <div className="col-span-2 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-white py-4 px-4 shadow bg-pln">
                 <div className="flex flex-row items-center gap-x-32 max-md:gap-x-16">
                     <div className="flex flex-col items-center">
-                        <h2 className="text-lg max-md:text-sm font-semibold mb-2">Selesai</h2>
+                        <h2 className="text-lg max-md:text-sm font-semibold mb-2">Total Pekerjaan</h2>
                         <p className="text-8xl max-md:text-4xl font-bold">{summaryData.total_jobs || 0}</p>
                     </div>
                     <div className="flex flex-col items-center">

@@ -17,6 +17,21 @@ const DurationsByCategory = ({ data }) => {
         },
         yAxis: { 
         },
+        dataZoom: [
+            {
+              type: 'slider',
+              show: true,
+              xAxisIndex: 0,
+              start: 0,
+              end: 100,
+            },
+            {
+              type: 'inside',
+              xAxisIndex: 0,
+              start: 0,
+              end: 100,
+            },
+          ],
         series: [{
             data: data.map(d => d.avg_duration_minutes),
             type: 'bar',
