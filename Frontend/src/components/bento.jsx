@@ -99,12 +99,10 @@ const Bento = () => {
             <div className="col-span-2 row-span-1 bg-gray-100 rounded-3xl flex flex-col justify-center items-center text-black py-4 px-4 shadow">
                 <div className="flex flex-row gap-x-20 max-md:gap-x-6">
                     {["resolved", "in progress", "pending"].map((statusName) => {
-                        // Cari status dari sumStatusData
                         const status = sumStatusData.find(
                             (item) => item.status_kerja.toLowerCase() === statusName
                         ) || { status_kerja: statusName, total_jobs: 0 };
 
-                        // Tentukan warna berdasarkan status
                         let bgColor;
                         switch (status.status_kerja.toLowerCase()) {
                             case "resolved":
@@ -119,6 +117,13 @@ const Bento = () => {
                             default:
                                 bgColor = "text-gray-300";
                         }
+                        
+                        let size;
+                        if (status.total_jobs < 100) {
+                            size = "text-8xl max-md:text-4xl" ;
+                        } else {
+                            size = "text-6xl max-md:text-xl";
+                        }
 
                         return (
                             <div key={status.status_kerja} className="flex flex-col items-center ">
@@ -126,7 +131,7 @@ const Bento = () => {
                                     {status.status_kerja}
                                 </p>
                                 <div
-                                    className={`flex items-center justify-center rounded-full font-bold text-8xl max-md:text-4xl ${bgColor}`}
+                                    className={`flex items-center justify-center rounded-full font-bold ${size} ${bgColor}`}
                                 >
                                     {status.total_jobs || 0}
                                 </div>
