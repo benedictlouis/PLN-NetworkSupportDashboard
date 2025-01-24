@@ -58,68 +58,102 @@ exports.addData = async (req, res) => {
     }
 };
 
-// Update data by ID
 exports.updateData = async (req, res) => {
     const { id } = req.params;
     const {
         minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
         nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
+        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
     } = req.body;
 
-    try {
-        // Ambil data lama dari database
-        const { rows: existingData } = await pool.query('SELECT * FROM network_support WHERE id = $1', [id]);
+    const fieldsToUpdate = [];
+    const values = [];
+    let query = 'UPDATE network_support SET ';
 
-        if (!existingData.length) {
-            return res.status(404).json({ message: 'Data not found' });
+    // Menambahkan kolom yang diubah ke query dan values
+    if (minggu) {
+        fieldsToUpdate.push('minggu = $' + (fieldsToUpdate.length + 1));
+        values.push(minggu);
+    }
+    if (bulan) {
+        fieldsToUpdate.push('bulan = $' + (fieldsToUpdate.length + 1));
+        values.push(bulan);
+    }
+    if (tahun) {
+        fieldsToUpdate.push('tahun = $' + (fieldsToUpdate.length + 1));
+        values.push(tahun);
+    }
+    if (tanggal_awal) {
+        fieldsToUpdate.push('tanggal_awal = $' + (fieldsToUpdate.length + 1));
+        values.push(tanggal_awal);
+    }
+    if (jam_awal) {
+        fieldsToUpdate.push('jam_awal = $' + (fieldsToUpdate.length + 1));
+        values.push(jam_awal);
+    }
+    if (status_kerja) {
+        fieldsToUpdate.push('status_kerja = $' + (fieldsToUpdate.length + 1));
+        values.push(status_kerja);
+    }
+    if (nama_pelapor_telepon) {
+        fieldsToUpdate.push('nama_pelapor_telepon = $' + (fieldsToUpdate.length + 1));
+        values.push(nama_pelapor_telepon);
+    }
+    if (divisi) {
+        fieldsToUpdate.push('divisi = $' + (fieldsToUpdate.length + 1));
+        values.push(divisi);
+    }
+    if (lokasi) {
+        fieldsToUpdate.push('lokasi = $' + (fieldsToUpdate.length + 1));
+        values.push(lokasi);
+    }
+    if (kategori_pekerjaan) {
+        fieldsToUpdate.push('kategori_pekerjaan = $' + (fieldsToUpdate.length + 1));
+        values.push(kategori_pekerjaan);
+    }
+    if (detail_pekerjaan) {
+        fieldsToUpdate.push('detail_pekerjaan = $' + (fieldsToUpdate.length + 1));
+        values.push(detail_pekerjaan);
+    }
+    if (pic) {
+        fieldsToUpdate.push('pic = $' + (fieldsToUpdate.length + 1));
+        values.push(pic);
+    }
+    if (solusi_keterangan) {
+        fieldsToUpdate.push('solusi_keterangan = $' + (fieldsToUpdate.length + 1));
+        values.push(solusi_keterangan);
+    }
+    if (tanggal_selesai) {
+        fieldsToUpdate.push('tanggal_selesai = $' + (fieldsToUpdate.length + 1));
+        values.push(tanggal_selesai);
+    }
+    if (jam_selesai) {
+        fieldsToUpdate.push('jam_selesai = $' + (fieldsToUpdate.length + 1));
+        values.push(jam_selesai);
+    }
+    if (edited_by) {
+        fieldsToUpdate.push('edited_by = $' + (fieldsToUpdate.length + 1));
+        values.push(edited_by); // Menambahkan edited_by dari body
+    }
+
+    // Jika ada kolom yang diubah, lanjutkan untuk membangun query dan menambahkan where
+    if (fieldsToUpdate.length > 0) {
+        query += fieldsToUpdate.join(', ') + ' WHERE id = $' + (fieldsToUpdate.length + 1);
+        values.push(id); // Menambahkan ID untuk WHERE clause
+
+        try {
+            const result = await pool.query(query, values);
+            if (result.rowCount) {
+                res.status(200).json({ message: 'Data updated successfully' });
+            } else {
+                res.status(404).json({ message: 'Data not found' });
+            }
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Internal server error' });
         }
-
-        // Data lama
-        const oldData = existingData[0];
-
-        // Gunakan data lama jika tidak ada nilai baru
-        const updatedData = {
-            minggu: minggu ?? oldData.minggu,
-            bulan: bulan ?? oldData.bulan,
-            tahun: tahun ?? oldData.tahun,
-            tanggal_awal: tanggal_awal ?? oldData.tanggal_awal,
-            jam_awal: jam_awal ?? oldData.jam_awal,
-            status_kerja: status_kerja ?? oldData.status_kerja,
-            nama_pelapor_telepon: nama_pelapor_telepon ?? oldData.nama_pelapor_telepon,
-            divisi: divisi ?? oldData.divisi,
-            lokasi: lokasi ?? oldData.lokasi,
-            kategori_pekerjaan: kategori_pekerjaan ?? oldData.kategori_pekerjaan,
-            detail_pekerjaan: detail_pekerjaan ?? oldData.detail_pekerjaan,
-            pic: pic ?? oldData.pic,
-            solusi_keterangan: solusi_keterangan ?? oldData.solusi_keterangan,
-            tanggal_selesai: tanggal_selesai ?? oldData.tanggal_selesai,
-            jam_selesai: jam_selesai ?? oldData.jam_selesai,
-        };
-
-        // Query update dengan data yang telah diperbarui
-        const query = `
-            UPDATE network_support SET
-                minggu = $1, bulan = $2, tahun = $3, tanggal_awal = $4, jam_awal = $5, status_kerja = $6,
-                nama_pelapor_telepon = $7, divisi = $8, lokasi = $9, kategori_pekerjaan = $10,
-                detail_pekerjaan = $11, pic = $12, solusi_keterangan = $13, tanggal_selesai = $14, jam_selesai = $15
-            WHERE id = $16
-        `;
-        const values = [
-            updatedData.minggu, updatedData.bulan, updatedData.tahun, updatedData.tanggal_awal, updatedData.jam_awal,
-            updatedData.status_kerja, updatedData.nama_pelapor_telepon, updatedData.divisi, updatedData.lokasi,
-            updatedData.kategori_pekerjaan, updatedData.detail_pekerjaan, updatedData.pic,
-            updatedData.solusi_keterangan, updatedData.tanggal_selesai, updatedData.jam_selesai, id
-        ];
-
-        const result = await pool.query(query, values);
-        if (result.rowCount) {
-            res.status(200).json({ message: 'Data updated successfully' });
-        } else {
-            res.status(404).json({ message: 'Data not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+    } else {
+        res.status(400).json({ message: 'No valid fields to update' });
     }
 };
 
@@ -219,3 +253,33 @@ exports.getJobsByStatus = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
+
+// Get history by task ID
+exports.getHistoryByTaskId = async (req, res) => {
+    const { id } = req.params; // ID dari task
+    try {
+        const query = `
+            SELECT 
+                h.date, 
+                u.username AS user, 
+                h.column_name, 
+                h.old_value, 
+                h.new_value
+            FROM history h
+            JOIN users u ON h.user_id = u.id
+            WHERE h.changes_id = $1
+            ORDER BY h.date DESC;
+        `;
+        const { rows } = await pool.query(query, [id]);
+
+        if (rows.length) {
+            res.status(200).json(rows);
+        } else {
+            res.status(404).json({ message: 'No history found for this task' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+
