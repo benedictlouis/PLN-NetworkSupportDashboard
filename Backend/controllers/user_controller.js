@@ -26,29 +26,22 @@ exports.login = async (req, res) => {
     }
 };
 
-exports.register = async (req, res) => {
-    const { username, password } = req.body;
+exports.getAllAccounts = async (req, res) => {
+    console.log("Request received to get all accounts");
 
-    // Validasi input
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Username and password are required' });
+    if (!req.session.role || req.session.role !== "Admin") {
+        return res.status(403).json({ message: "Unauthorized: Only Admin can view all accounts" });
     }
 
-    // Cek apakah username sudah ada
-    const checkUserQuery = `SELECT * FROM users WHERE username = $1`;
-    const insertUserQuery = `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`;
-
     try {
-        const { rows: existingUser } = await pool.query(checkUserQuery, [username]);
-        if (existingUser.length) {
-            return res.status(409).json({ message: 'Username already exists' });
-        }
-
-        // Simpan pengguna baru ke database
-        const { rows } = await pool.query(insertUserQuery, [username, password]);
-        res.status(201).json({ message: 'User registered successfully', userId: rows[0].id });
+        const query = `SELECT id, username, role FROM users ORDER BY id`;
+        const { rows } = await pool.query(query);
+        
+        console.log("Accounts retrieved:", rows);
+        res.status(200).json({ accounts: rows });
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error' });
+        console.error("Database error:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
