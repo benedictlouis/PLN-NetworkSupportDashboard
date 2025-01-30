@@ -220,6 +220,9 @@ FOR EACH ROW
 EXECUTE FUNCTION log_history();
 
 
+ALTER TYPE minggu_enum ADD VALUE 'Minggu 5';
+
+
 
 
 -- Test Data input network_support
