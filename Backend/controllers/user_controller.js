@@ -6,14 +6,19 @@ exports.login = async (req, res) => {
     try {
         const { rows } = await pool.query(query, [username, password]);
         if (rows.length) {
-            res.status(200).json({ message: 'Login successful' });
+            const user = rows[0];
+            res.status(200).json({ 
+                message: 'Login successful',
+                username: user.username, 
+                role: user.role  
+            });
         } else {
             res.status(401).json({ message: 'Invalid username or password' });
         }
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
 
 exports.register = async (req, res) => {
     const { username, password } = req.body;

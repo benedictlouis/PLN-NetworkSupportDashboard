@@ -49,6 +49,9 @@ const Login = () => {
                     sessionStorage.setItem("sessionId", data.sessionId);
                 }
             
+                sessionStorage.setItem("username", data.username);
+                sessionStorage.setItem("userRole", data.role);
+                
                 addToast('success', 'Logged in successfully');
                 setTimeout(() => window.location.href = "/", 1000);
             } else {
