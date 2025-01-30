@@ -28,6 +28,7 @@ exports.login = async (req, res) => {
 
 exports.getAllAccounts = async (req, res) => {
     console.log("Request received to get all accounts");
+    console.log("Session Data:", req.session);
 
     if (!req.session.role || req.session.role !== "Admin") {
         return res.status(403).json({ message: "Unauthorized: Only Admin can view all accounts" });

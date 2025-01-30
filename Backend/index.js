@@ -11,7 +11,10 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+}));
 
 const userRoutes = require("./routes/user_routes.js");
 const dataRoutes = require("./routes/data_routes.js");

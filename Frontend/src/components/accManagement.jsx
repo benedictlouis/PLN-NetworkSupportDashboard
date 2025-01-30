@@ -8,15 +8,29 @@ const AccountManagement = () => {
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [formData, setFormData] = useState({ username: "", password: "", role: "Admin" });
 
-    console.log(sessionStorage.getItem("userId"), sessionStorage.getItem("username"), sessionStorage.getItem("userRole"));
+    const userRole = sessionStorage.getItem("userRole");
+    const token = sessionStorage.getItem("SESSION_SECRET");
 
-    // Fetch daftar akun
+    // 🛑 Hanya Admin yang boleh melihat akun
     useEffect(() => {
+        if (userRole !== "Admin") {
+            setError("Anda tidak memiliki izin untuk melihat akun.");
+            setLoading(false);
+            return;
+        }
+
         const fetchAccounts = async () => {
             try {
-                const response = await fetch("http://localhost:5433/user/all-accounts");
-                if (!response.ok) throw new Error("Failed to fetch accounts");
-                
+                const response = await fetch("http://localhost:5433/user/all-accounts", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    credentials: "include"
+                });
+
+                if (!response.ok) throw new Error("Gagal mengambil daftar akun.");
+
                 const data = await response.json();
                 setAccounts(data.accounts);
             } catch (err) {
@@ -27,9 +41,9 @@ const AccountManagement = () => {
         };
 
         fetchAccounts();
-    }, []);
+    }, [userRole, token]);
 
-    // Fungsi untuk membuka modal edit
+    // Fungsi membuka modal edit
     const openEditModal = (account) => {
         setSelectedAccount(account);
         setFormData({
@@ -40,13 +54,13 @@ const AccountManagement = () => {
         setIsEditing(true);
     };
 
-    // Fungsi untuk menangani perubahan form edit
+    // Fungsi menangani input form
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Fungsi untuk mengupdate akun
+    // Fungsi update akun
     const handleUpdate = async () => {
         try {
             const response = await fetch("http://localhost:5433/user/update-accounts", {
@@ -55,36 +69,38 @@ const AccountManagement = () => {
                 body: JSON.stringify({
                     id: selectedAccount.id,
                     username: formData.username,
-                    password: formData.password,
+                    password: formData.password || selectedAccount.password,
                     role: formData.role
                 }),
             });
 
-            if (!response.ok) throw new Error("Failed to update account");
+            if (!response.ok) throw new Error("Gagal memperbarui akun");
 
-            setAccounts((prev) =>
-                prev.map((acc) => (acc.id === selectedAccount.id ? { ...acc, ...formData } : acc))
-            );
+            // Ambil ulang data dari server setelah update
+            const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
+            const updatedData = await updatedResponse.json();
+            setAccounts(updatedData.accounts);
             setIsEditing(false);
         } catch (err) {
             alert("Error: " + err.message);
         }
     };
 
-    // Fungsi untuk menghapus akun
+    // Fungsi delete akun
     const handleDelete = async (id) => {
         if (!window.confirm("Apakah Anda yakin ingin menghapus akun ini?")) return;
 
         try {
-            const response = await fetch("http://localhost:5433/user/delete-accounts", {
+            const response = await fetch(`http://localhost:5433/user/delete-accounts/${id}`, {
                 method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id }),
             });
 
-            if (!response.ok) throw new Error("Failed to delete account");
+            if (!response.ok) throw new Error("Gagal menghapus akun");
 
-            setAccounts((prev) => prev.filter((acc) => acc.id !== id));
+            // Ambil ulang data setelah akun dihapus
+            const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
+            const updatedData = await updatedResponse.json();
+            setAccounts(updatedData.accounts);
         } catch (err) {
             alert("Error: " + err.message);
         }
