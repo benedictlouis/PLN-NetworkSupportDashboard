@@ -58,6 +58,7 @@ exports.addData = async (req, res) => {
     }
 };
 
+// Update data dan simpan ke history
 exports.updateData = async (req, res) => {
     const { id } = req.params;
     const {
@@ -66,96 +67,70 @@ exports.updateData = async (req, res) => {
         detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
     } = req.body;
 
-    const fieldsToUpdate = [];
-    const values = [];
-    let query = 'UPDATE network_support SET ';
-
-    // Menambahkan kolom yang diubah ke query dan values
-    if (minggu) {
-        fieldsToUpdate.push('minggu = $' + (fieldsToUpdate.length + 1));
-        values.push(minggu);
-    }
-    if (bulan) {
-        fieldsToUpdate.push('bulan = $' + (fieldsToUpdate.length + 1));
-        values.push(bulan);
-    }
-    if (tahun) {
-        fieldsToUpdate.push('tahun = $' + (fieldsToUpdate.length + 1));
-        values.push(tahun);
-    }
-    if (tanggal_awal) {
-        fieldsToUpdate.push('tanggal_awal = $' + (fieldsToUpdate.length + 1));
-        values.push(tanggal_awal);
-    }
-    if (jam_awal) {
-        fieldsToUpdate.push('jam_awal = $' + (fieldsToUpdate.length + 1));
-        values.push(jam_awal);
-    }
-    if (status_kerja) {
-        fieldsToUpdate.push('status_kerja = $' + (fieldsToUpdate.length + 1));
-        values.push(status_kerja);
-    }
-    if (nama_pelapor_telepon) {
-        fieldsToUpdate.push('nama_pelapor_telepon = $' + (fieldsToUpdate.length + 1));
-        values.push(nama_pelapor_telepon);
-    }
-    if (divisi) {
-        fieldsToUpdate.push('divisi = $' + (fieldsToUpdate.length + 1));
-        values.push(divisi);
-    }
-    if (lokasi) {
-        fieldsToUpdate.push('lokasi = $' + (fieldsToUpdate.length + 1));
-        values.push(lokasi);
-    }
-    if (kategori_pekerjaan) {
-        fieldsToUpdate.push('kategori_pekerjaan = $' + (fieldsToUpdate.length + 1));
-        values.push(kategori_pekerjaan);
-    }
-    if (detail_pekerjaan) {
-        fieldsToUpdate.push('detail_pekerjaan = $' + (fieldsToUpdate.length + 1));
-        values.push(detail_pekerjaan);
-    }
-    if (pic) {
-        fieldsToUpdate.push('pic = $' + (fieldsToUpdate.length + 1));
-        values.push(pic);
-    }
-    if (solusi_keterangan) {
-        fieldsToUpdate.push('solusi_keterangan = $' + (fieldsToUpdate.length + 1));
-        values.push(solusi_keterangan);
-    }
-    if (tanggal_selesai) {
-        fieldsToUpdate.push('tanggal_selesai = $' + (fieldsToUpdate.length + 1));
-        values.push(tanggal_selesai);
-    }
-    if (jam_selesai) {
-        fieldsToUpdate.push('jam_selesai = $' + (fieldsToUpdate.length + 1));
-        values.push(jam_selesai);
-    }
-    if (edited_by) {
-        fieldsToUpdate.push('edited_by = $' + (fieldsToUpdate.length + 1));
-        values.push(edited_by); // Menambahkan edited_by dari body
+    // Validasi input awal
+    if (!edited_by) {
+        return res.status(400).json({ message: 'Field edited_by is required' });
     }
 
-    // Jika ada kolom yang diubah, lanjutkan untuk membangun query dan menambahkan where
-    if (fieldsToUpdate.length > 0) {
-        query += fieldsToUpdate.join(', ') + ' WHERE id = $' + (fieldsToUpdate.length + 1);
-        values.push(id); // Menambahkan ID untuk WHERE clause
+    try {
+        const oldDataQuery = 'SELECT * FROM network_support WHERE id = $1';
+        const { rows: oldDataRows } = await pool.query(oldDataQuery, [id]);
 
-        try {
-            const result = await pool.query(query, values);
-            if (result.rowCount) {
-                res.status(200).json({ message: 'Data updated successfully' });
-            } else {
-                res.status(404).json({ message: 'Data not found' });
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Internal server error' });
+        if (!oldDataRows.length) {
+            return res.status(404).json({ message: 'Data not found' });
         }
-    } else {
-        res.status(400).json({ message: 'No valid fields to update' });
+        const oldData = oldDataRows[0];
+
+        const usernameQuery = 'SELECT username FROM users WHERE id = $1';
+        const { rows: usernameRows } = await pool.query(usernameQuery, [edited_by]);
+
+        if (!usernameRows.length) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const username = usernameRows[0].username;
+
+        const fieldsToUpdate = [];
+        const values = [];
+        let query = 'UPDATE network_support SET ';
+
+        // Loop untuk mendeteksi perubahan
+        Object.entries({ minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja, nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan, detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai }).forEach(([key, value]) => {
+            if (value && value !== oldData[key]) {
+                fieldsToUpdate.push(`${key} = $${fieldsToUpdate.length + 1}`);
+                values.push(value);
+            }
+        });
+
+        if (fieldsToUpdate.length > 0) {
+            query += fieldsToUpdate.join(', ') + ' WHERE id = $' + (fieldsToUpdate.length + 1);
+            values.push(id);
+
+            await pool.query(query, values);
+
+            // Insert history entries
+            for (let i = 0; i < fieldsToUpdate.length; i++) {
+                const columnName = fieldsToUpdate[i].split(' ')[0];
+                const oldValue = oldData[columnName];
+                const newValue = values[i];
+
+                const historyQuery = `
+                    INSERT INTO history (changes_id, column_name, old_value, new_value, username)
+                    VALUES ($1, $2, $3, $4, $5)
+                `;
+                await pool.query(historyQuery, [id, columnName, oldValue, newValue, username]);
+            }
+
+            res.status(200).json({ message: 'Data updated successfully' });
+        } else {
+            res.status(400).json({ message: 'No valid fields to update' });
+        }
+    } catch (error) {
+        console.error('Error in updateData:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 
 // Delete data by ID
@@ -254,21 +229,20 @@ exports.getJobsByStatus = async (req, res) => {
     }
 };
 
-// Get history by task ID
 exports.getHistoryByTaskId = async (req, res) => {
-    const { id } = req.params; // ID dari task
+    const { id } = req.params;
     try {
         const query = `
             SELECT 
-                h.date, 
-                u.username AS user, 
-                h.column_name, 
-                h.old_value, 
-                h.new_value
-            FROM history h
-            JOIN users u ON h.user_id = u.id
-            WHERE h.changes_id = $1
-            ORDER BY h.date DESC;
+                date, 
+                username, 
+                column_name, 
+                old_value, 
+                new_value
+            FROM history
+            WHERE changes_id = $1
+            AND username IS NOT NULL
+            ORDER BY date DESC;
         `;
         const { rows } = await pool.query(query, [id]);
 
@@ -281,5 +255,3 @@ exports.getHistoryByTaskId = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
-
-
