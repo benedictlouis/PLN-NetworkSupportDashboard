@@ -42,6 +42,9 @@ const Login = () => {
             console.log(data);
             if (response.ok) {
                 sessionStorage.setItem("isLoggedIn", true);
+                sessionStorage.setItem("username", data.username);
+                sessionStorage.setItem("userRole", data.role);
+                
                 addToast('success', 'Logged in successfully');
                 setTimeout(() => window.location.href = "/", 1000);
             } else {
