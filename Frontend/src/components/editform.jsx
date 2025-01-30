@@ -26,6 +26,8 @@ const EditForm = () => {
     const [errors, setErrors] = useState({});
     const [toasts, setToasts] = useState([]);
 
+    const userId = sessionStorage.getItem("userId");
+
     const addToast = (type, message) => {
         const id = new Date().getTime();
         setToasts([...toasts, { id, type, message }]);
@@ -97,6 +99,7 @@ const EditForm = () => {
                     jam_selesai: formatTime(data.jam_selesai),
                     status_kerja: data.status_kerja,
                     solusi_keterangan: data.solusi_keterangan,
+                    edited_by: userId,
                 });
 
             } catch (error) {

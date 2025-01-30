@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
     const navigate = useNavigate();
+    const userId = sessionStorage.getItem("userId");
 
     const [formData, setFormData] = useState({
         kategori: "",
@@ -126,7 +127,8 @@ const Form = () => {
                 pic: `{${formData.pic.join(',')}}`,
                 solusi_keterangan: null,
                 tanggal_selesai: null,
-                jam_selesai: null
+                jam_selesai: null,
+                edited_by: null,
             };
 
             console.log(formDataToSubmit);

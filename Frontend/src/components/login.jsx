@@ -48,7 +48,8 @@ const Login = () => {
                 if (data.sessionId) {
                     sessionStorage.setItem("sessionId", data.sessionId);
                 }
-            
+
+                sessionStorage.setItem("userId", data.id);
                 sessionStorage.setItem("username", data.username);
                 sessionStorage.setItem("userRole", data.role);
                 
