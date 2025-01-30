@@ -25,38 +25,69 @@ exports.getDataById = async (req, res) => {
     }
 };
 
-// Add new data
+// Add new data and record history
 exports.addData = async (req, res) => {
     const {
         minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
         nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
+        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
     } = req.body;
 
+    if (!edited_by) {
+        return res.status(400).json({ message: 'Field edited_by is required' });
+    }
+
     try {
-        const query = `
+        // Insert new data
+        const insertQuery = `
             INSERT INTO network_support (
                 minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
                 nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-                detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
+                detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
             ) VALUES (
                 $1, $2, $3, $4, $5, $6,
                 $7, $8, $9, $10,
-                $11, $12, $13, $14, $15
+                $11, $12, $13, $14, $15, $16
             ) RETURNING id
         `;
         const values = [
             minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
             nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
+            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
         ];
 
-        const { rows } = await pool.query(query, values);
-        res.status(201).json({ message: 'Data added successfully', id: rows[0].id });
+        const { rows } = await pool.query(insertQuery, values);
+        const newId = rows[0].id;
+
+        // Ambil username berdasarkan edited_by
+        const usernameQuery = 'SELECT username FROM users WHERE id = $1';
+        const { rows: userRows } = await pool.query(usernameQuery, [edited_by]);
+
+        if (!userRows.length) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const username = userRows[0].username;
+
+        // Cek jika history sudah dimasukkan
+        const checkHistoryQuery = `SELECT 1 FROM history WHERE changes_id = $1 AND column_name = 'created' LIMIT 1`;
+        const { rows: historyRows } = await pool.query(checkHistoryQuery, [newId]);
+
+        if (historyRows.length === 0) {
+            // Simpan ke history bahwa pekerjaan telah dibuat hanya jika belum ada history sebelumnya
+            const historyQuery = `
+                INSERT INTO history (changes_id, column_name, old_value, new_value, username)
+                VALUES ($1, 'created', NULL, 'Pekerjaan dibuat', $2)
+            `;
+            await pool.query(historyQuery, [newId, username]);
+        }
+
+        res.status(201).json({ message: 'Data added successfully', id: newId });
     } catch (error) {
+        console.error('Error in addData:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 // Update data dan simpan ke history
 exports.updateData = async (req, res) => {
@@ -234,7 +265,7 @@ exports.getHistoryByTaskId = async (req, res) => {
     try {
         const query = `
             SELECT 
-                date, 
+                MIN(date) as date, -- Ambil tanggal paling lama atau bisa diganti MAX(date) untuk terbaru
                 username, 
                 column_name, 
                 old_value, 
@@ -242,8 +273,10 @@ exports.getHistoryByTaskId = async (req, res) => {
             FROM history
             WHERE changes_id = $1
             AND username IS NOT NULL
+            GROUP BY username, column_name, old_value, new_value
             ORDER BY date DESC;
         `;
+
         const { rows } = await pool.query(query, [id]);
 
         if (rows.length) {

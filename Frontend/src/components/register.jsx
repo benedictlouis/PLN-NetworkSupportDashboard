@@ -7,7 +7,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import MenuItem from '@mui/material/MenuItem';
-import ToastContainer from './ToastContainer';
+import ToastContainer from './toastcontainer';
 
 const Register = () => {
     const [username, setUsername] = useState("");

@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/navbar';
 import AccountManagement from '../components/accManagement';
 
 import { useNavigate } from 'react-router-dom';

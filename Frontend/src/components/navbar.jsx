@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { navLinks } from "../index.js";
 import { Disclosure } from '@headlessui/react';
 import { Bars3Icon } from '@heroicons/react/24/outline';
-import ToastContainer from "./ToastContainer";
+import ToastContainer from "./toastcontainer";
 
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')

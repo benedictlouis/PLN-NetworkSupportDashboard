@@ -2,7 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { pool } = require("./config/db.config.js");
 const cors = require("cors");
-
+const session = require("express-session"); 
+require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT;
@@ -16,10 +17,20 @@ const userRoutes = require("./routes/user_routes.js");
 const dataRoutes = require("./routes/data_routes.js");
 const chartRoutes = require("./routes/chart_routes.js");
 
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+}));
 
 app.use("/user", userRoutes);
 app.use("/data", dataRoutes);
 app.use("/chart", chartRoutes);
+
+app.get("/debug-session", (req, res) => {
+    res.json(req.session);
+});
 
 
 pool.connect(() => {    
