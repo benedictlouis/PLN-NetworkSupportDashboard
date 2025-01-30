@@ -1,236 +1,190 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from "react";
 
 const AccountManagement = () => {
-    const [tempatSampah, setTempatSampah] = useState([]);
-    const [formData, setFormData] = useState({
-        nama: '',
-        fakultas: '',
-        tempatSampahId: '',
-        latitude: '',
-        longitude: ''
-    });
-    const [editing, setEditing] = useState(false);
+    const [accounts, setAccounts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [toasts, setToasts] = useState([]);
+    const [error, setError] = useState(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedAccount, setSelectedAccount] = useState(null);
+    const [formData, setFormData] = useState({ username: "", password: "", role: "Admin" });
 
-    // Fungsi untuk menambahkan toast
-    const addToast = (type, message) => {
-        const id = new Date().getTime();
-        setToasts((prevToasts) => [...prevToasts, { id, type, message }]);
-        setTimeout(() => removeToast(id), 3000);
-    };
+    console.log(sessionStorage.getItem("userId"), sessionStorage.getItem("username"), sessionStorage.getItem("userRole"));
 
-    // Fungsi untuk menghapus toast
-    const removeToast = (id) => {
-        setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id));
-    };
-
-    // Fungsi untuk mengambil data tempat sampah
-    const fetchTempatSampah = async () => {
-        try {
-            const response = await fetch('http://localhost:3001/TempatSampah');
-            if (!response.ok) {
-                throw new Error('Failed to fetch tempat sampah');
-            }
-            const data = await response.json();
-            setTempatSampah(data);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching tempat sampah:', error);
-            addToast('error', 'Failed to load tempat sampah data');
-        }
-    };
-
+    // Fetch daftar akun
     useEffect(() => {
-        fetchTempatSampah(); // Ambil data saat pertama kali render
+        const fetchAccounts = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/all-accounts");
+                if (!response.ok) throw new Error("Failed to fetch accounts");
+                
+                const data = await response.json();
+                setAccounts(data.accounts);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAccounts();
     }, []);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    // Fungsi untuk membuka modal edit
+    const openEditModal = (account) => {
+        setSelectedAccount(account);
+        setFormData({
+            username: account.username,
+            password: "",
+            role: account.role
+        });
+        setIsEditing(true);
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // Fungsi untuk menangani perubahan form edit
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+    };
 
-        const url = editing
-            ? `http://localhost:3001/EditTempatSampah/${formData.tempatSampahId}` // Edit request
-            : 'http://localhost:3001/AddTempatSampah'; // Add request
-
-        const method = editing ? 'PUT' : 'POST';
-
+    // Fungsi untuk mengupdate akun
+    const handleUpdate = async () => {
         try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            const response = await fetch("http://localhost:5433/user/update-accounts", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    nama: formData.nama,
-                    fakultas: formData.fakultas,
-                    latitude: formData.latitude,
-                    longitude: formData.longitude,
+                    id: selectedAccount.id,
+                    username: formData.username,
+                    password: formData.password,
+                    role: formData.role
                 }),
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to save tempat sampah');
-            }
+            if (!response.ok) throw new Error("Failed to update account");
 
-            setFormData({ nama: '', fakultas: '', tempatSampahId: '', latitude: '', longitude: '' });
-            setEditing(false);
-            await fetchTempatSampah(); // Refresh daftar tempat sampah setelah operasi selesai
-
-            addToast('success', editing ? 'Tempat Sampah berhasil diperbarui' : 'Tempat Sampah berhasil ditambahkan');
-        } catch (error) {
-            console.error('Error saving tempat sampah:', error);
-            addToast('error', 'Gagal menyimpan tempat sampah');
+            setAccounts((prev) =>
+                prev.map((acc) => (acc.id === selectedAccount.id ? { ...acc, ...formData } : acc))
+            );
+            setIsEditing(false);
+        } catch (err) {
+            alert("Error: " + err.message);
         }
     };
 
-    const handleEdit = (tempatSampah) => {
-        setFormData({
-            nama: tempatSampah.nama,
-            fakultas: tempatSampah.fakultas,
-            tempatSampahId: tempatSampah.id,
-            latitude: tempatSampah.latitude,
-            longitude: tempatSampah.longitude,
-        });
-        setEditing(true);
-    };
+    // Fungsi untuk menghapus akun
+    const handleDelete = async (id) => {
+        if (!window.confirm("Apakah Anda yakin ingin menghapus akun ini?")) return;
 
-    const handleDelete = async (tempatSampahId) => {
         try {
-            const response = await fetch(`http://localhost:3001/DeleteTempatSampah/${tempatSampahId}`, {
-                method: 'DELETE',
+            const response = await fetch("http://localhost:5433/user/delete-accounts", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to delete tempat sampah');
-            }
+            if (!response.ok) throw new Error("Failed to delete account");
 
-            await fetchTempatSampah(); // Refresh daftar tempat sampah setelah delete
-
-            addToast('success', 'Tempat Sampah berhasil dihapus');
-        } catch (error) {
-            console.error('Error deleting tempat sampah:', error);
-            addToast('error', 'Gagal menghapus tempat sampah');
+            setAccounts((prev) => prev.filter((acc) => acc.id !== id));
+        } catch (err) {
+            alert("Error: " + err.message);
         }
     };
 
-    if (loading) {
-        return <p>Loading data...</p>;
-    }
+    if (loading) return <p className="text-center">Loading accounts...</p>;
+    if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
     return (
-        <div>
-            {/* Formulir untuk menambah atau mengedit tempat sampah */}
-            <form onSubmit={handleSubmit} className="mb-6">
-                <h2 className="text-xl font-semibold">{editing ? 'Edit Tempat Sampah' : 'Tambah Tempat Sampah'}</h2>
-                <div className="mb-4 ">
-                    <label htmlFor="nama" className="block text-white">Nama Tempat Sampah</label>
-                    <input
-                        type="text"
-                        id="nama"
-                        name="nama"
-                        value={formData.nama}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <div className="mb-4 ">
-                    <label htmlFor="fakultas" className="block text-white">Fakultas</label>
-                    <input
-                        type="text"
-                        id="fakultas"
-                        name="fakultas"
-                        value={formData.fakultas}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <div className="mb-4 ">
-                    <label htmlFor="latitude" className="block text-white">Latitude</label>
-                    <input
-                        type="text"
-                        id="latitude"
-                        name="latitude"
-                        value={formData.latitude}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <div className="mb-4 ">
-                    <label htmlFor="longitude" className="block text-white">Longitude</label>
-                    <input
-                        type="text"
-                        id="longitude"
-                        name="longitude"
-                        value={formData.longitude}
-                        onChange={handleInputChange}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
-                </div>
-                <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">
-                    {editing ? 'Simpan Perubahan' : 'Tambah Tempat Sampah'}
-                </button>
-            </form>
-
-            {/* Daftar tempat sampah */}
-            <h2 className="text-xl font-semibold mb-4">Daftar Tempat Sampah</h2>
-            <table className="min-w-full table-auto">
-                <thead>
-                    <tr>
-                        <th className="border px-4 py-2 text-white">Nama Tempat Sampah</th>
-                        <th className="border px-4 py-2 text-white">Fakultas</th>
-                        <th className="border px-4 py-2 text-white">Latitude</th>
-                        <th className="border px-4 py-2 text-white">Longitude</th>
-                        <th className="border px-4 py-2 text-white">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {tempatSampah.map((tempatSampah) => (
-                        <tr key={tempatSampah.tempatSampahId}>
-                            <td className="border px-4 py-2 text-white">{tempatSampah.nama}</td>
-                            <td className="border px-4 py-2 text-white">{tempatSampah.fakultas}</td>
-                            <td className="border px-4 py-2 text-white">{tempatSampah.latitude}</td>
-                            <td className="border px-4 py-2 text-white">{tempatSampah.longitude}</td>
-                            <td className="border px-4 py-2">
-                                <button
-                                    onClick={() => handleEdit(tempatSampah)}
-                                    className="bg-yellow-500 text-white px-4 py-2 rounded mr-2"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(tempatSampah.id)}
-                                    className="bg-red-500 text-white px-4 py-2 rounded"
-                                >
-                                    Hapus
-                                </button>
-                            </td>
+        <div className="p-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Manajemen Akun</h1>
+            <div className="bg-white p-4 shadow-md rounded-lg">
+                <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr className="bg-gray-100">
+                            <th className="border p-2">ID</th>
+                            <th className="border p-2">Username</th>
+                            <th className="border p-2">Role</th>
+                            <th className="border p-2">Aksi</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            {/* Toast Notifications */}
-            <div className="fixed bottom-5 right-5 space-y-2">
-                {toasts.map((toast) => (
-                    <div
-                        key={toast.id}
-                        className={`p-3 rounded-md text-white ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}
-                    >
-                        {toast.message}
-                    </div>
-                ))}
+                    </thead>
+                    <tbody>
+                        {accounts.map((account) => (
+                            <tr key={account.id} className="text-center">
+                                <td className="border p-2">{account.id}</td>
+                                <td className="border p-2">{account.username}</td>
+                                <td className="border p-2">{account.role}</td>
+                                <td className="border p-2 space-x-2">
+                                    <button
+                                        className="bg-blue-500 text-white px-3 py-1 rounded"
+                                        onClick={() => openEditModal(account)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        className="bg-red-500 text-white px-3 py-1 rounded"
+                                        onClick={() => handleDelete(account.id)}
+                                    >
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
+
+            {/* Modal Edit */}
+            {isEditing && (
+                <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                        <h2 className="text-xl font-bold mb-4">Edit Akun</h2>
+                        <label className="block text-sm font-semibold">Username</label>
+                        <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            className="w-full p-2 border rounded mb-3"
+                        />
+
+                        <label className="block text-sm font-semibold">Password (opsional)</label>
+                        <input
+                            type="password"
+                            name="password"
+                            placeholder="Isi jika ingin mengubah password"
+                            onChange={handleChange}
+                            className="w-full p-2 border rounded mb-3"
+                        />
+
+                        <label className="block text-sm font-semibold">Role</label>
+                        <select
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            className="w-full p-2 border rounded mb-4"
+                        >
+                            <option value="Admin">Admin</option>
+                            <option value="Support">Support</option>
+                        </select>
+
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                className="bg-gray-400 text-white px-4 py-2 rounded"
+                                onClick={() => setIsEditing(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                onClick={handleUpdate}
+                            >
+                                Simpan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-    )
-}
+    );
+};
 
 export default AccountManagement;

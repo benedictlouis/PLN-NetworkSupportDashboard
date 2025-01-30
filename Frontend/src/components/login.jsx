@@ -43,11 +43,6 @@ const Login = () => {
             if (response.ok) {
                 sessionStorage.setItem("isLoggedIn", "true");
                 // console.log(sessionStorage.getItem("isLoggedIn"));
-            
-                // Menyimpan session ID jika tersedia
-                if (data.sessionId) {
-                    sessionStorage.setItem("sessionId", data.sessionId);
-                }
                 
                 sessionStorage.setItem("userId", data.id);
                 sessionStorage.setItem("username", data.username);

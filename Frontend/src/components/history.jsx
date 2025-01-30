@@ -34,8 +34,8 @@ const History = () => {
     }, [id]);
 
     if (loading) return <p className="text-center">Loading history...</p>;
-    if (error) return <p className="flex justify-center items-center text-center text-gray-500">Tidak ada history saat ini</p>;
-    if (history.length === 0) return <p className="text-center text-gray-500">Tidak ada history saat ini</p>;
+    // if (error) return <p className="flex justify-center items-center text-center text-gray-500">Tidak ada history saat ini</p>;
+    // if (history.length === 0) return <p className="text-center text-gray-500">Tidak ada history saat ini</p>;
 
     // **Mengelompokkan data berdasarkan tanggal**
     const groupedHistory = history.reduce((acc, item) => {
@@ -62,6 +62,9 @@ const History = () => {
         <div className="pt-6">
             <h1 className="font-bold text-[20px] text-gradient px-4">History</h1>
             <div className="p-4 overflow-y-auto bg-gray-50 max-h-screen">
+                {Object.keys(groupedHistory).length === 0 && (
+                    <p className="flex justify-center items-center text-center text-gray-500">Tidak ada history saat ini</p>
+                )}
                 {Object.keys(groupedHistory).map((date, index) => (
                     <div key={index} className="p-4 mb-4 border border-gray-200 rounded-lg bg-white">
                         <time className="text-lg font-semibold text-gray-900">{date}</time>
