@@ -52,19 +52,27 @@ exports.register = async (req, res) => {
     }
 };
 
-exports.createSupportAccount = async (req, res) => {
-    console.log("Request received to create support account"); // Cek apakah fungsi terpanggil
+exports.createUserAccount = async (req, res) => {
+    console.log("Request received to create account");
 
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
 
-    if (!username || !password) {
-        console.log("Missing username or password");
-        return res.status(400).json({ message: "Username and password are required" });
+    if (!username || !password || !role) {
+        console.log("Missing username, password, or role");
+        return res.status(400).json({ message: "Username, password, and role are required" });
+    }
+
+    if (role !== "Admin" && role !== "Support") {
+        return res.status(400).json({ message: "Invalid role. Allowed roles: Admin, Support" });
+    }
+
+    if (!req.session.role || req.session.role !== "Admin") {
+        return res.status(403).json({ message: "Unauthorized: Only Admin can create accounts" });
     }
 
     try {
         const checkUserQuery = `SELECT * FROM users WHERE username = $1`;
-        const insertUserQuery = `INSERT INTO users (username, password, role) VALUES ($1, $2, 'Support') RETURNING id`;
+        const insertUserQuery = `INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id`;
 
         const { rows: existingUser } = await pool.query(checkUserQuery, [username]);
         if (existingUser.length) {
@@ -72,33 +80,134 @@ exports.createSupportAccount = async (req, res) => {
             return res.status(409).json({ message: "Username already exists" });
         }
 
-        const { rows } = await pool.query(insertUserQuery, [username, password]);
-        console.log("Support account created:", rows[0]);
-        res.status(201).json({ message: "Support account created successfully", userId: rows[0].id });
+        const { rows } = await pool.query(insertUserQuery, [username, password, role]);
+        console.log(`${role} account created:`, rows[0]);
+        res.status(201).json({ message: `${role} account created successfully`, userId: rows[0].id });
     } catch (error) {
         console.error("Database error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
 
+exports.updateUserAccount = async (req, res) => {
+    console.log("Request received to update account");
 
-exports.deleteSupportAccount = async (req, res) => {
-    const { id } = req.params;
+    const { targetUsername, newUsername, newPassword, newRole } = req.body;
 
-    if (req.session.userRole !== "Admin") {
-        return res.status(403).json({ message: "Access denied. Only Admin can delete accounts." });
+    if (!targetUsername) {
+        console.log("Missing target username");
+        return res.status(400).json({ message: "Target username is required" });
     }
 
-    const deleteQuery = `DELETE FROM users WHERE id = $1 AND role = 'Support' RETURNING *`;
+    if (!newUsername && !newPassword && !newRole) {
+        console.log("No update fields provided");
+        return res.status(400).json({ message: "At least one field (username, password, or role) must be provided for update" });
+    }
+
+    if (!req.session.role || req.session.role !== "Admin") {
+        return res.status(403).json({ message: "Unauthorized: Only Admin can update accounts" });
+    }
 
     try {
-        const { rows } = await pool.query(deleteQuery, [id]);
-        if (rows.length) {
-            res.status(200).json({ message: "Support user deleted successfully" });
-        } else {
-            res.status(404).json({ message: "Support user not found or cannot be deleted" });
+        const checkUserQuery = `SELECT * FROM users WHERE username = $1`;
+        const { rows: existingUser } = await pool.query(checkUserQuery, [targetUsername]);
+
+        if (existingUser.length === 0) {
+            console.log("User not found");
+            return res.status(404).json({ message: "User not found" });
         }
+
+        const userToUpdate = existingUser[0];
+
+        if (userToUpdate.role === "Admin" && targetUsername !== req.session.username) {
+            return res.status(403).json({ message: "Unauthorized: Admins can only edit their own account or Support accounts" });
+        }
+
+        let updateFields = [];
+        let queryParams = [];
+        let paramIndex = 1;
+
+        if (newUsername) {
+            updateFields.push(`username = $${paramIndex++}`);
+            queryParams.push(newUsername);
+        }
+        if (newPassword) {
+            updateFields.push(`password = $${paramIndex++}`);
+            queryParams.push(newPassword);
+        }
+        if (newRole) {
+            updateFields.push(`role = $${paramIndex++}`);
+            queryParams.push(newRole);
+        }
+
+        queryParams.push(targetUsername);
+
+        const updateUserQuery = `UPDATE users SET ${updateFields.join(", ")} WHERE username = $${paramIndex} RETURNING id, username, role`;
+        const { rows } = await pool.query(updateUserQuery, queryParams);
+
+        console.log("User updated:", rows[0]);
+
+        if (targetUsername === req.session.username) {
+            req.session.username = newUsername || req.session.username;
+            req.session.role = newRole || req.session.role;
+        }
+
+        res.status(200).json({ message: `User ${targetUsername} updated successfully`, updatedUser: rows[0] });
+
     } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+exports.deleteUserAccount = async (req, res) => {
+    console.log("Request received to delete account");
+
+    const { username } = req.body;
+
+    if (!username) {
+        console.log("Missing username");
+        return res.status(400).json({ message: "Username is required" });
+    }
+
+    if (!req.session.role || req.session.role !== "Admin") {
+        return res.status(403).json({ message: "Unauthorized: Only Admin can delete accounts" });
+    }
+
+    try {
+        const checkUserQuery = `SELECT * FROM users WHERE username = $1`;
+        const deleteUserQuery = `DELETE FROM users WHERE username = $1 RETURNING id, username, role`;
+
+        const { rows: userToDelete } = await pool.query(checkUserQuery, [username]);
+
+        if (userToDelete.length === 0) {
+            console.log("User not found");
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const targetUser = userToDelete[0];
+
+        if (targetUser.role === "Admin" && targetUser.username !== req.session.username) {
+            return res.status(403).json({ message: "Unauthorized: Admins can only delete their own account or Support accounts" });
+        }
+
+        const { rows } = await pool.query(deleteUserQuery, [username]);
+        console.log(`Account deleted:`, rows[0]);
+
+        if (req.session.username === username) {
+            req.session.destroy((err) => {
+                if (err) {
+                    console.error("Error destroying session:", err);
+                    return res.status(500).json({ message: "Account deleted, but session error occurred" });
+                }
+                return res.status(200).json({ message: `Your account (${username}) has been deleted successfully. Session ended.` });
+            });
+        } else {
+            res.status(200).json({ message: `Account ${username} deleted successfully` });
+        }
+
+    } catch (error) {
+        console.error("Database error:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
