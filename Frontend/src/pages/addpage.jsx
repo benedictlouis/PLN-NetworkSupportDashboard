@@ -1,7 +1,19 @@
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar';
 import Form from '../components/form';
 
 const AddPage = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+
+        if (isLoggedIn === "false") {
+            navigate('/login');
+        }
+    }, [navigate]);
+
     return (
         <div className="w-screen h-full relative bg-[#fafafa] pt-2">
             <Navbar />
@@ -17,7 +29,7 @@ const AddPage = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default AddPage;

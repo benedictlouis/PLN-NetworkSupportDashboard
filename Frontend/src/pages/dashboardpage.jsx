@@ -3,6 +3,12 @@ import Pie from "../components/piechart";
 import Bento from "../components/bento";
 
 const MainPage = () => {
+
+    const cookies = document.cookie.split('; ');
+    const sessionId = cookies.find(row => row.startsWith('sessionId='))
+        ?.split('=')[1]; // Gunakan optional chaining untuk mencegah error jika tidak ditemukan
+    console.log(sessionId || 'Session ID tidak ditemukan');
+
     return (
         <div className="w-screen min-h-screen relative bg-[#fafafa] pt-2">
             <Navbar />

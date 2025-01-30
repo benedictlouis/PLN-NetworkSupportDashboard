@@ -22,11 +22,11 @@ export default function Navbar() {
         ? navLinks.map((nav) =>
             nav.id === "login" ? { ...nav, title: "Log Out" } : nav
         )
-        : navLinks;
+        : navLinks.filter((nav) => nav.id !== "accountManagement");
 
     const handleLogout = () => {
         sessionStorage.setItem("isLoggedIn", "false");
-        setIsLoggedIn(false);
+        // console.log(sessionStorage.getItem("isLoggedIn"));
         addToast("success", "You have been logged out!");
         setTimeout(() => (window.location.href = "/"), 3000);
     };

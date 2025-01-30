@@ -8,6 +8,10 @@ export const navLinks = [
       title: "Daftar Pekerjaan",
     },
     {
+      id: "accountManagement",
+      title: "Account Management",
+    },
+    {
       id: "login",
       title: "Log In",
     },

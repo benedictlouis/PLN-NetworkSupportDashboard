@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
 
 const EditForm = () => {
+    const navigate = useNavigate();
     const { id } = useParams();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [formData, setFormData] = useState({
@@ -220,9 +221,9 @@ const EditForm = () => {
         }
     };
 
-
-    console.log("Selected PICs:", formData.pic);
-
+    const handleBack = () => {
+        navigate(-1);
+    };
 
     return (
         <form className="w-full max-w-lg" onSubmit={handleSubmit}>
@@ -518,12 +519,12 @@ const EditForm = () => {
             {formData.status === "Resolved" && (
                 <div className="flex -mx-3 mb-6">
                     <div className="w-1/2 px-3">
-                    <label
-                        className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                        htmlFor="lokasi"
-                    >
-                        Waktu Selesai
-                    </label>
+                        <label
+                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            htmlFor="lokasi"
+                        >
+                            Waktu Selesai
+                        </label>
                         <label
                             className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
                             htmlFor="tanggal_selesai"
@@ -542,12 +543,12 @@ const EditForm = () => {
                         )}
                     </div>
                     <div className="w-1/2 px-3">
-                    <label
-                        className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                        htmlFor="lokasi"
-                    >
-                        <br />
-                    </label>
+                        <label
+                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                            htmlFor="lokasi"
+                        >
+                            <br />
+                        </label>
                         <label
                             className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
                             htmlFor="jam_selesai"
@@ -569,7 +570,14 @@ const EditForm = () => {
             )}
 
             {/* Submit Button */}
-            <div className="">
+            <div className="flex justify-end">
+                <button
+                    type="button"
+                    className="mr-2 px-4 py-2 bg-white text-red-700 rounded outline-none"
+                    onClick={handleBack}
+                >
+                    Cancel
+                </button>
                 <button
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                     type="submit"

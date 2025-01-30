@@ -1,7 +1,19 @@
 import Navbar from "../components/navbar";
 import EditForm from "../components/editform";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const EditPage = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+
+        if (isLoggedIn === "false") {
+            navigate('/login');
+        }
+    }, [navigate]);
+
     return (
         <div className="w-screen min-h-screen relative bg-[#fafafa] pt-2">
             <Navbar />

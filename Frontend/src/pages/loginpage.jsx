@@ -1,7 +1,19 @@
 import Navbar from "../components/navbar";
 import Login from "../components/login";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+
+        if (isLoggedIn === "true") {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
+
     return (
         <div className="w-screen h-screen relative bg-[#fafafa] pt-2">
             <Navbar />

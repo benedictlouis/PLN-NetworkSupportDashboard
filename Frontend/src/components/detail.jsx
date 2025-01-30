@@ -4,6 +4,8 @@ import axios from "axios";
 import ToastContainer from './ToastContainer';
 import Done from "./done"; // Import form
 
+import History from "./history";
+
 const Detail = () => {
     const { id } = useParams();
     const [data, setData] = useState(null);
@@ -13,7 +15,7 @@ const Detail = () => {
     const navigate = useNavigate();
     const [toasts, setToasts] = useState([]);
     const [showDone, setShowDone] = useState(false); // State untuk form
-    const [existingData, setExistingData] = useState({}); 
+    const [existingData, setExistingData] = useState({});
 
     const addToast = (type, message) => {
         const id = new Date().getTime();
@@ -43,12 +45,12 @@ const Detail = () => {
         if (data) {
             setExistingData(data);
         }
-    }, [data]);    
+    }, [data]);
 
     useEffect(() => {
         const loginStatus = sessionStorage.getItem("isLoggedIn");
         setIsLoggedIn(loginStatus === "true");
-        
+
         const fetchData = async () => {
             try {
                 const response = await axios.get(`http://localhost:5433/data/${id}`);
@@ -56,7 +58,7 @@ const Detail = () => {
                 setData(fetchedData);
                 setExistingData(fetchedData);
                 setLoading(false);
-    
+
                 const durationsResponse = await axios.get(`http://localhost:5433/data/durations`);
                 const durations = durationsResponse.data;
                 const matchingDuration = durations.find((item) => item.id === parseInt(id));
@@ -69,9 +71,9 @@ const Detail = () => {
                 setLoading(false);
             }
         };
-    
+
         fetchData();
-    }, [id, data]);    
+    }, [id, data]);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -124,19 +126,19 @@ const Detail = () => {
                     jam_selesai: null,
                 }),
             });
-    
+
             if (!response.ok) {
                 throw new Error("Failed to update status to In Progress");
             }
-    
+
             const updatedData = await response.json();
             setData(updatedData);
             addToast("success", "Status pekerjaan berhasil diubah");
         } catch (error) {
             addToast("error", "Gagal mengubah status pekerjaan");
         }
-    };    
-    
+    };
+
     const handleMarkAsPending = async () => {
         try {
             const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
@@ -151,17 +153,17 @@ const Detail = () => {
                     jam_selesai: null, // Menghapus jam selesai
                 }),
             });
-    
+
             if (!response.ok) {
                 throw new Error("Failed to update status to Pending");
             }
-    
+
             const data = await response.json();
             addToast("success", "Status pekerjaan berhasil diubah");
         } catch (error) {
             addToast("error", "Gagal mengubah status pekerjaan");
         }
-    };    
+    };
 
     // Format tanggal menjadi "12 Desember 2024"
     const formatDate = (date) => {
@@ -180,12 +182,20 @@ const Detail = () => {
         data.pic = "Tidak ada PIC";
     }
 
+    function toggleSlideover() {
+        document.getElementById('slideover-container').classList.toggle('invisible');
+        document.getElementById('slideover-bg').classList.toggle('opacity-0');
+        document.getElementById('slideover-bg').classList.toggle('opacity-50');
+        document.getElementById('slideover').classList.toggle('translate-x-full');
+    }
+
+
     return (
         <div className="container mx-auto p-6">
             <div className="flex flex-col items-center justify-center w-full">
                 <h1 className="font-bold text-[60px] text-gradient pt-4 pb-2">{data.kategori_pekerjaan}</h1>
                 <h2
-                    className={`text-[20px] pb-8 ${data.status_kerja === 'Resolved'
+                    className={`text-[20px] pb-2 ${data.status_kerja === 'Resolved'
                         ? 'text-green-500'
                         : data.status_kerja === 'In Progress'
                             ? 'text-yellow-500'
@@ -196,6 +206,69 @@ const Detail = () => {
                 >
                     {data.status_kerja}
                 </h2>
+            </div>
+
+            {/* Button toggle slide-over */}
+            <div className="absolute top-44 right-8 max-md:right-2">
+                <div
+                    onClick={toggleSlideover} // Pass the function reference here
+                    className="flex items-center gap-2 cursor-pointer px-5 py-2 max-md:text-sm text-md hover:text-[#1C94AC] rounded text-gray-700"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-5 h-5"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 6v6l4 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                    </svg>
+                    <span className="max-md:invisible">History</span>
+                </div>
+                <div id="slideover-container" className="w-full h-full fixed inset-0 invisible">
+                    <div
+                        onClick={toggleSlideover}
+                        id="slideover-bg"
+                        className="w-full h-full duration-500 ease-out transition-all inset-0 absolute bg-gray-900 opacity-0"
+                    ></div>
+                    <div
+                        id="slideover"
+                        className="w-96 bg-white h-full absolute right-0 duration-300 ease-out transition-all translate-x-full"
+                    >
+                        <div
+                            className="absolute cursor-pointer text-gray-600 hover:text-[#1C94AC] top-0 w-8 h-8 flex items-center justify-center right-0 mt-5 mr-5"
+                            onClick={toggleSlideover}
+                        >
+                            <svg
+                                className="w-6 h-6"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                ></path>
+                            </svg>
+                        </div>
+                        {/* <div className="p-6">
+                            <h1 className="font-bold text-[20px] text-gradient">History</h1>
+                            <div className="mt-4">
+                                <p className="text-sm text-gray-500">Tanggal</p>
+                                <p className="text-gray-700">12 Desember 2024</p>
+                            </div>
+                        </div> */}
+                        <History />
+                    </div>
+                </div>
             </div>
 
             <div className="bg-white shadow-lg rounded-lg p-6">

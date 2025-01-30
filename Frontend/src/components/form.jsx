@@ -4,6 +4,8 @@ import { Navigate } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         kategori: "",
         nama: "",
@@ -127,6 +129,8 @@ const Form = () => {
                 jam_selesai: null
             };
 
+            console.log(formDataToSubmit);
+
             try {
                 const response = await fetch('http://localhost:5433/data/input', {
                     method: 'POST',
@@ -142,7 +146,7 @@ const Form = () => {
                     console.log("Form submitted successfully!");
                     addToast('success', 'Form submitted successfully!');
                     setTimeout(() => window.location.href = "/list", 1000);
-                    
+
                 } else {
                     console.log(`Error: ${result.message}`);
                     addToast('error', 'Failed to submit the form. Please try again.');
@@ -154,6 +158,9 @@ const Form = () => {
         }
     };
 
+    const handleBack = () => {
+        navigate(-1);
+    };
 
     return (
         <form className="w-full max-w-lg" onSubmit={handleSubmit}>
@@ -446,7 +453,14 @@ const Form = () => {
 
 
             {/* Submit Button */}
-            <div className="">
+            <div className="flex justify-end">
+                <button
+                    type="button"
+                    className="mr-2 px-4 py-2 bg-white text-red-700 rounded outline-none"
+                    onClick={handleBack}
+                >
+                    Cancel
+                </button>
                 <button
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                     type="submit"
@@ -454,6 +468,7 @@ const Form = () => {
                     Submit
                 </button>
             </div>
+
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </form>
     );

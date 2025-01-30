@@ -41,12 +41,20 @@ const Login = () => {
             const data = await response.json();
             console.log(data);
             if (response.ok) {
-                sessionStorage.setItem("isLoggedIn", true);
+                sessionStorage.setItem("isLoggedIn", "true");
+                // console.log(sessionStorage.getItem("isLoggedIn"));
+            
+                // Menyimpan session ID jika tersedia
+                if (data.sessionId) {
+                    sessionStorage.setItem("sessionId", data.sessionId);
+                }
+            
                 addToast('success', 'Logged in successfully');
                 setTimeout(() => window.location.href = "/", 1000);
             } else {
                 addToast('error', 'Username or password is incorrect');
             }
+            
         } catch (error) {
             console.error("Error logging in:", error);
             addToast('error', 'An error occurred while logging in');
