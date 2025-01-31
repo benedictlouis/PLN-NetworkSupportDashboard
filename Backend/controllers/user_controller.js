@@ -86,6 +86,7 @@ exports.createUserAccount = async (req, res) => {
 
 exports.updateUserAccount = async (req, res) => {
     console.log("Request received to update account");
+    console.log(req.body);
 
     const { targetUsername, newUsername, newPassword, newRole } = req.body;
 

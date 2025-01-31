@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import ToastContainer from './toastcontainer';
 
 const AccountManagement = () => {
     const [accounts, setAccounts] = useState([]);
@@ -8,8 +9,19 @@ const AccountManagement = () => {
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [formData, setFormData] = useState({ username: "", password: "", confirmPassword: "", role: "Admin" });
     const [passwordError, setPasswordError] = useState("");
+    const [toasts, setToasts] = useState([]);
 
     const userRole = sessionStorage.getItem("userRole");
+
+    const addToast = (type, message) => {
+        const id = new Date().getTime();
+        setToasts([...toasts, { id, type, message }]);
+        setTimeout(() => removeToast(id), 3000);
+    };
+
+    const removeToast = (id) => {
+        setToasts(toasts.filter((toast) => toast.id !== id));
+    };
 
     useEffect(() => {
         if (userRole !== "Admin") {
@@ -27,17 +39,24 @@ const AccountManagement = () => {
                     },
                     credentials: "include"
                 });
-
+        
                 if (!response.ok) throw new Error("Gagal mengambil daftar akun.");
-
+        
                 const data = await response.json();
-                setAccounts(data.accounts);
+                console.log("Fetched accounts:", data); // Debugging
+        
+                if (data && data.accounts) {
+                    setAccounts(data.accounts);
+                } else {
+                    throw new Error("Data akun tidak tersedia");
+                }
             } catch (err) {
+                console.error("Error fetching accounts:", err.message);
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
-        };
+        };          
 
         fetchAccounts();
     }, [userRole]);
@@ -61,48 +80,68 @@ const AccountManagement = () => {
 
     const handleUpdate = async () => {
         if (formData.password && formData.password !== formData.confirmPassword) {
-            setPasswordError("Password dan konfirmasi password tidak cocok.");
+            addToast('error', 'Password does not match');
             return;
         }
-
+    
         try {
+            const payload = {
+                targetUsername: selectedAccount.username, // Username lama sebagai target
+                newUsername: formData.username, // Username baru
+                newRole: formData.role // Role baru
+            };
+    
+            // Hanya tambahkan password jika diisi
+            if (formData.password) {
+                payload.newPassword = formData.password;
+            }
+    
             const response = await fetch("http://localhost:5433/user/update-accounts", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    id: selectedAccount.id,
-                    username: formData.username,
-                    password: formData.password || selectedAccount.password,
-                    role: formData.role
-                }),
+                body: JSON.stringify(payload),
             });
-
-            if (!response.ok) throw new Error("Gagal memperbarui akun");
-
+            console.log(payload);
+    
+            if (!response.ok) {
+                throw new Error("Failed updating account");
+            }
+    
+            // Ambil data terbaru setelah update
             const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
             const updatedData = await updatedResponse.json();
-            setAccounts(updatedData.accounts);
-            setIsEditing(false);
+            console.log("Updated accounts:", updatedData);
+    
+            if (updatedData && updatedData.accounts) {
+                setAccounts(updatedData.accounts);
+                setIsEditing(false);
+                addToast('success', 'Account updated successfully');
+            } else {
+                addToast('error', 'Failed updating account');
+            }
         } catch (err) {
-            alert("Error: " + err.message);
+            console.error("Error updating account:", err.message);
+            addToast('error', 'An error occurred while updating account');
         }
-    };
+    };      
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Apakah Anda yakin ingin menghapus akun ini?")) return;
+        if (!window.confirm("Delete account?")) return;
 
         try {
             const response = await fetch(`http://localhost:5433/user/delete-accounts/${id}`, {
                 method: "DELETE",
             });
 
-            if (!response.ok) throw new Error("Gagal menghapus akun");
+            if (!response.ok) throw new addToast('error', 'Failed deleting account');
 
             const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
             const updatedData = await updatedResponse.json();
             setAccounts(updatedData.accounts);
+            addToast('success', 'Account deleted successfully');
         } catch (err) {
             alert("Error: " + err.message);
+            addToast('error', 'An error occurred while deleting account');
         }
     };
 
@@ -210,6 +249,7 @@ const AccountManagement = () => {
                     </div>
                 </div>
             )}
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
         </div>
     );
 };

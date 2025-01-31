@@ -13,7 +13,7 @@ const Register = () => {
     const [username, setUsername] = useState("");
     const [password, setPass] = useState("");
     const [confirmPass, setConfirmPass] = useState("");
-    const [role, setRole] = useState("admin");
+    const [role, setRole] = useState("Admin");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [toasts, setToasts] = useState([]);
@@ -130,8 +130,8 @@ const Register = () => {
                             value={role}
                             onChange={(event) => setRole(event.target.value)}
                         >
-                            <MenuItem value="admin">Admin</MenuItem>
-                            <MenuItem value="support">Support</MenuItem>
+                            <MenuItem value="Admin">Admin</MenuItem>
+                            <MenuItem value="Support">Support</MenuItem>
                         </TextField>
                         <Button type="submit" variant="contained" sx={{ mt: 2 }}>Sign up</Button>
                     </Box>
