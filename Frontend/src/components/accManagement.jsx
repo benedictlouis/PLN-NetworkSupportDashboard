@@ -39,12 +39,11 @@ const AccountManagement = () => {
                     },
                     credentials: "include"
                 });
-        
+
                 if (!response.ok) throw new Error("Gagal mengambil daftar akun.");
-        
+
                 const data = await response.json();
-                console.log("Fetched accounts:", data); // Debugging
-        
+
                 if (data && data.accounts) {
                     setAccounts(data.accounts);
                 } else {
@@ -56,7 +55,7 @@ const AccountManagement = () => {
             } finally {
                 setLoading(false);
             }
-        };          
+        };
 
         fetchAccounts();
     }, [userRole]);
@@ -83,99 +82,107 @@ const AccountManagement = () => {
             addToast('error', 'Password does not match');
             return;
         }
-    
+
         try {
             const payload = {
-                targetUsername: selectedAccount.username, // Username lama sebagai target
-                newUsername: formData.username, // Username baru
-                newRole: formData.role // Role baru
+                targetUsername: selectedAccount.username,
+                newUsername: formData.username,
+                newRole: formData.role
             };
-    
-            // Hanya tambahkan password jika diisi
+
             if (formData.password) {
                 payload.newPassword = formData.password;
             }
-    
-            const response = await fetch("http://localhost:5433/user/update-accounts", {
+
+            const response = await fetch("http://localhost:5433/user/update-account", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify(payload),
             });
-            console.log(payload);
-    
-            if (!response.ok) {
-                throw new Error("Failed updating account");
+
+            let responseData = {};
+            try {
+                responseData = await response.json(); // Ambil JSON dari response
+            } catch (error) {
+                console.error("Failed to parse JSON response:", error);
             }
-    
-            // Ambil data terbaru setelah update
-            const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
-            const updatedData = await updatedResponse.json();
-            console.log("Updated accounts:", updatedData);
-    
-            if (updatedData && updatedData.accounts) {
-                setAccounts(updatedData.accounts);
-                setIsEditing(false);
-                addToast('success', 'Account updated successfully');
+
+            if (response.ok) {
+                addToast('success', responseData.message || 'Account updated successfully');
+                setTimeout(() => window.location.href = "/accountManagement", 1000);
             } else {
-                addToast('error', 'Failed updating account');
+                addToast('error', responseData.message || `Failed updating account (Status: ${response.status})`);
             }
         } catch (err) {
-            console.error("Error updating account:", err.message);
             addToast('error', 'An error occurred while updating account');
-        }
-    };      
-
-    const handleDelete = async (id) => {
-        if (!window.confirm("Delete account?")) return;
-
-        try {
-            const response = await fetch(`http://localhost:5433/user/delete-accounts/${id}`, {
-                method: "DELETE",
-            });
-
-            if (!response.ok) throw new addToast('error', 'Failed deleting account');
-
-            const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
-            const updatedData = await updatedResponse.json();
-            setAccounts(updatedData.accounts);
-            addToast('success', 'Account deleted successfully');
-        } catch (err) {
-            alert("Error: " + err.message);
-            addToast('error', 'An error occurred while deleting account');
+            console.error("Error updating account:", err);
         }
     };
+
+    const handleDelete = async (account) => {
+        if (!window.confirm(`Delete account ${account.username}?`)) return;
+    
+        try {
+            const response = await fetch(`http://localhost:5433/user/delete-account`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ username: account.username }), // Kirim username langsung
+            });
+    
+            let responseData = {};
+            try {
+                responseData = await response.json();
+            } catch (error) {
+                console.error("Failed to parse JSON response:", error);
+            }
+    
+            if (response.ok) {
+                addToast('success', responseData.message || 'Account deleted successfully');
+    
+                // Refresh daftar akun setelah delete
+                setAccounts(accounts.filter(acc => acc.id !== account.id));
+            } else {
+                addToast('error', responseData.message || `Failed deleting account (Status: ${response.status})`);
+            }
+        } catch (err) {
+            console.error("Error deleting account:", err);
+            addToast('error', 'An error occurred while deleting account');
+        }
+    };    
 
     if (loading) return <p className="text-center">Loading accounts...</p>;
     if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
     return (
         <div className="">
-            <div className="bg-white p-4 shadow-md rounded-lg">
+            <div className="bg-transparent p-4 ">
                 <table className="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr className="bg-pln">
-                            <th className="border p-3">ID</th>
-                            <th className="border p-3">Username</th>
-                            <th className="border p-3">Role</th>
-                            <th className="border p-3"></th>
+                            <th className="border py-3 px-4">ID</th>
+                            <th className="border py-3 px-8">Username</th>
+                            <th className="border py-3 px-8">Role</th>
+                            <th className="border py-3 px-8"></th>
                         </tr>
                     </thead>
                     <tbody>
                         {accounts.map((account) => (
                             <tr key={account.id} className="text-center text-gray-700">
-                                <td className="border p-3">{account.id}</td>
-                                <td className="border p-3">{account.username}</td>
-                                <td className="border p-3">{account.role}</td>
-                                <td className="border p-3 space-x-4">
+                                <td className="border py-3 px-4">{account.id}</td>
+                                <td className="border py-3 px-8">{account.username}</td>
+                                <td className="border py-3 px-8">{account.role}</td>
+                                <td className="border py-3 space-x-4">
                                     <button
-                                        className="bg-black text-white rounded hover:bg-blue-700 hover:outline-none px-4 py-1"
+                                        className="bg-transparent text-blue-700 rounded hover:text-blue-500 hover:outline-none px-4 py-1"
                                         onClick={() => openEditModal(account)}
                                     >
                                         Edit
                                     </button>
                                     <button
-                                        className="bg-black text-white rounded hover:bg-red-700 hover:outline-none px-4 py-1"
-                                        onClick={() => handleDelete(account.id)}
+                                        className="bg-transparent text-red-700 rounded hover:text-red-500 hover:outline-none px-4 py-1"
+                                        onClick={() => handleDelete(account)}
                                     >
                                         Hapus
                                     </button>
