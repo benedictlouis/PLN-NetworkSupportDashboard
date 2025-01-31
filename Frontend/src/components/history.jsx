@@ -34,8 +34,6 @@ const History = () => {
     }, [id]);
 
     if (loading) return <p className="text-center">Loading history...</p>;
-    // if (error) return <p className="flex justify-center items-center text-center text-gray-500">Tidak ada history saat ini</p>;
-    // if (history.length === 0) return <p className="text-center text-gray-500">Tidak ada history saat ini</p>;
 
     // **Mengelompokkan data berdasarkan tanggal**
     const groupedHistory = history.reduce((acc, item) => {
@@ -58,6 +56,27 @@ const History = () => {
             .replace(/\b\w/g, (char) => char.toUpperCase()); // Kapitalisasi kata pertama
     };
 
+    const formatValue = (column, value) => {
+        if (column.toLowerCase().includes("tanggal")) {
+            const formatTanggal = new Date(value).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+            });
+
+            if(formatTanggal === "01 Januari 1970") return "-";
+
+            return formatTanggal;
+        }
+        if (column.toLowerCase().includes("jam")) {
+            return new Date(value).toLocaleTimeString("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+            }).replace(":", ".") + " WIB";
+        }
+        return value || "-";
+    };
+
     return (
         <div className="pt-6">
             <h1 className="font-bold text-[20px] text-gradient px-4">History</h1>
@@ -75,14 +94,14 @@ const History = () => {
                                         {new Date(item.date).toLocaleTimeString("id-ID", {
                                             hour: "2-digit",
                                             minute: "2-digit",
-                                        })}
+                                        }).replace(":", ".") + " WIB"}
                                     </p>
                                     <p className="text-sm font-normal text-gray-700">
                                         <span className="font-medium text-black">{item.username}</span> mengubah
                                         <span className="font-medium text-black"> {formatColumnName(item.column_name)}</span>.
                                     </p>
                                     <p className="pt-1 text-xs text-gray-500 flex items-center">
-                                        {item.old_value || "-"}
+                                        {formatValue(item.column_name, item.old_value)}
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             width="12"
@@ -92,7 +111,7 @@ const History = () => {
                                         >
                                             <path d="M7.293 4.707 14.586 12l-7.293 7.293 1.414 1.414L17.414 12 8.707 3.293 7.293 4.707z" />
                                         </svg>
-                                        {item.new_value}
+                                        {formatValue(item.column_name, item.new_value)}
                                     </p>
                                 </li>
                             ))}

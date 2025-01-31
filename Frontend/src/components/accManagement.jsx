@@ -40,7 +40,19 @@ const AccountManagement = () => {
                     credentials: "include"
                 });
 
-                if (!response.ok) throw new Error("Gagal mengambil daftar akun.");
+                let errorMessage = "Gagal mengambil daftar akun.";
+
+                if (!response.ok) {
+                    try {
+                        const errorData = await response.json(); // Coba parsing error dari backend
+                        if (errorData.message) {
+                            errorMessage = errorData.message; // Ambil pesan error dari backend jika ada
+                        }
+                    } catch (error) {
+                        console.error("Failed to parse JSON error response:", error);
+                    }
+                    throw new Error(errorMessage);
+                }
 
                 const data = await response.json();
 
@@ -51,7 +63,7 @@ const AccountManagement = () => {
                 }
             } catch (err) {
                 console.error("Error fetching accounts:", err.message);
-                setError(err.message);
+                setError(err.message); // Menampilkan error dari backend di UI
             } finally {
                 setLoading(false);
             }
@@ -122,7 +134,7 @@ const AccountManagement = () => {
 
     const handleDelete = async (account) => {
         if (!window.confirm(`Delete account ${account.username}?`)) return;
-    
+
         try {
             const response = await fetch(`http://localhost:5433/user/delete-account`, {
                 method: "DELETE",
@@ -130,17 +142,22 @@ const AccountManagement = () => {
                 credentials: "include",
                 body: JSON.stringify({ username: account.username }), // Kirim username langsung
             });
-    
+
             let responseData = {};
             try {
                 responseData = await response.json();
             } catch (error) {
                 console.error("Failed to parse JSON response:", error);
             }
-    
+
             if (response.ok) {
+
+                if (account.username === sessionStorage.getItem("usename")) {
+                    setTimeout(() => window.location.href = "/accountManagement", 1000);
+                }
+
                 addToast('success', responseData.message || 'Account deleted successfully');
-    
+
                 // Refresh daftar akun setelah delete
                 setAccounts(accounts.filter(acc => acc.id !== account.id));
             } else {
@@ -150,7 +167,7 @@ const AccountManagement = () => {
             console.error("Error deleting account:", err);
             addToast('error', 'An error occurred while deleting account');
         }
-    };    
+    };
 
     if (loading) return <p className="text-center">Loading accounts...</p>;
     if (error) return <p className="text-center text-red-500">Error: {error}</p>;

@@ -17,6 +17,10 @@ const Detail = () => {
     const [showDone, setShowDone] = useState(false); // State untuk form
     const [existingData, setExistingData] = useState({});
 
+    // console.log(sessionStorage.getItem("userId"));
+    // console.log(sessionStorage.getItem("username"));
+    // console.log(sessionStorage.getItem("userRole"));
+
     const addToast = (type, message) => {
         const id = new Date().getTime();
         setToasts([...toasts, { id, type, message }]);
@@ -342,7 +346,7 @@ const Detail = () => {
                     </div>
                 </div>
 
-                {isLoggedIn && (
+                {isLoggedIn && sessionStorage.getItem("userRole") === "Admin" && (
                     <div className="mt-8 ease-in transition-all duration-300 flex justify-between items-center">
                         {/* Tombol di kiri */}
                         <div>
@@ -360,6 +364,53 @@ const Detail = () => {
                             </button>
                         </div>
 
+                        {/* Tombol di kanan */}
+                        <div className="flex gap-4">
+                            {/* Tombol Selesai */}
+                            {data.status_kerja !== "Resolved" && (
+                                <button
+                                    onClick={handleMarkAsCompleted}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-green-700"
+                                >
+                                    Selesai
+                                </button>
+                            )}
+
+                            {/* Tombol In Progress */}
+                            {data.status_kerja !== "In Progress" && (
+                                <button
+                                    onClick={handleMarkAsInProgress}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-yellow-700"
+                                >
+                                    In Progress
+                                </button>
+                            )}
+
+                            {/* Tombol Pending */}
+                            {data.status_kerja !== "Pending" && (
+                                <button
+                                    onClick={handleMarkAsPending}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
+                                >
+                                    Pending
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Modal untuk selesai */}
+                        {showDone && (
+                            <Done
+                                existingData={data}
+                                id={id}
+                                onClose={handleCloseDone}
+                                onSuccess={handleSuccessMarkAsSelesai}
+                            />
+                        )}
+                    </div>
+                )}
+
+                {isLoggedIn && sessionStorage.getItem("userRole") === "Support" && (
+                    <div className="mt-8 ease-in transition-all duration-300 flex justify-end items-center">
                         {/* Tombol di kanan */}
                         <div className="flex gap-4">
                             {/* Tombol Selesai */}

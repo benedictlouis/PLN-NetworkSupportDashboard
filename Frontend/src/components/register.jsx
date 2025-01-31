@@ -133,7 +133,17 @@ const Register = () => {
                             <MenuItem value="Admin">Admin</MenuItem>
                             <MenuItem value="Support">Support</MenuItem>
                         </TextField>
-                        <Button type="submit" variant="contained" sx={{ mt: 2 }}>Sign up</Button>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            sx={{
+                                mt: 2,
+                                backgroundColor: '#16161d',
+                                '&:hover': { backgroundColor: '#1C94AC' },
+                                padding: '12px 24px',
+                            }}>
+                            Sign up
+                        </Button>
                     </Box>
                 </div>
             </section>

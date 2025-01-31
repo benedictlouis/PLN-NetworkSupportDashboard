@@ -22,11 +22,10 @@ const EditForm = () => {
         jam_selesai: "",
         status_kerja: "",
         solusi_keterangan: "",
+        edited_by: "",
     });
     const [errors, setErrors] = useState({});
     const [toasts, setToasts] = useState([]);
-
-    const userId = sessionStorage.getItem("userId");
 
     const addToast = (type, message) => {
         const id = new Date().getTime();
@@ -99,7 +98,7 @@ const EditForm = () => {
                     jam_selesai: formatTime(data.jam_selesai),
                     status_kerja: data.status_kerja,
                     solusi_keterangan: data.solusi_keterangan,
-                    edited_by: userId,
+                    edited_by: data.edited_by,
                 });
 
             } catch (error) {
@@ -178,6 +177,8 @@ const EditForm = () => {
 
             const bulanNama = monthNames[parseInt(bulan) - 1];
 
+            const userId = sessionStorage.getItem("userId");
+
             // Create the payload from the form data
             const formDataToSubmit = {
                 minggu: `Minggu ${minggu}`,
@@ -194,7 +195,8 @@ const EditForm = () => {
                 pic: `{${formData.pic.join(',')}}`,
                 solusi_keterangan: null,
                 tanggal_selesai: null,
-                jam_selesai: null
+                jam_selesai: null,
+                edited_by: userId,
             };
 
             try {

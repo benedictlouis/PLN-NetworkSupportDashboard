@@ -18,7 +18,7 @@ export default function Navbar() {
         setIsLoggedIn(loginStatus === "true");
     }, []);
 
-    const updatedNavLinks = isLoggedIn
+    const updatedNavLinks = isLoggedIn && sessionStorage.getItem("userRole") === "Admin"
         ? navLinks.map((nav) =>
             nav.id === "login" ? { ...nav, title: "Log Out" } : nav
         )

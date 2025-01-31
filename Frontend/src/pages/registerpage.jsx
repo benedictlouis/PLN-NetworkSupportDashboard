@@ -14,7 +14,9 @@ const RegisterPage = () => {
 
         if (isLoggedIn === "false") {
             navigate('/login');
-        }
+        } else if (sessionStorage.getItem("userRole") != "Admin"){
+            navigate('/dashboard');
+        };
     }, [navigate]);
 
     return (

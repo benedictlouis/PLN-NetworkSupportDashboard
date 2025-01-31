@@ -9,6 +9,8 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
     });
     const [error, setError] = useState(null);
 
+    const userId = sessionStorage.getItem("userId");
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -30,6 +32,7 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
             tanggal_selesai: `${formData.tanggal_selesai}T${formData.jam_selesai}:00.000Z`,
             jam_selesai: `${formData.jam_selesai}:00`,
             status_kerja: "Resolved",
+            edited_by: userId,
         };
 
         axios
