@@ -18,11 +18,16 @@ export default function Navbar() {
         setIsLoggedIn(loginStatus === "true");
     }, []);
 
-    const updatedNavLinks = isLoggedIn && sessionStorage.getItem("userRole") === "Admin"
-        ? navLinks.map((nav) =>
-            nav.id === "login" ? { ...nav, title: "Log Out" } : nav
-        )
+    const userRole = sessionStorage.getItem("userRole");
+
+    const updatedNavLinks = isLoggedIn
+        ? navLinks
+            .map((nav) =>
+                nav.id === "login" ? { ...nav, title: "Log Out" } : nav
+            )
+            .filter((nav) => userRole === "Admin" || nav.id !== "accountManagement")
         : navLinks.filter((nav) => nav.id !== "accountManagement");
+
 
     const handleLogout = () => {
         sessionStorage.setItem("isLoggedIn", "false");

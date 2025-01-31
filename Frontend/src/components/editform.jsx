@@ -186,7 +186,7 @@ const EditForm = () => {
                 tahun: tahun,
                 tanggal_awal: `${tanggal_awal_full}.000Z`,
                 jam_awal: `${formData.jam}:00`,
-                status_kerja: "In Progress",
+                status_kerja: `${formData.status}`,
                 nama_pelapor_telepon: `${formData.nama} - ${formData.telepon}`,
                 divisi: formData.divisi || null,
                 lokasi: formData.lokasi || null,
@@ -213,7 +213,14 @@ const EditForm = () => {
                 if (response.ok) {
                     console.log("Data updated successfully!");
                     addToast('success', 'Data updated successfully!');
-                    setTimeout(() => window.location.href = "/list", 1000);
+
+                    // Misalkan ID berasal dari parameter URL saat ini
+                    const currentPath = window.location.pathname; // Contoh: "/data/123"
+                    const id = currentPath.split("/")[2]; // Ambil ID dari URL
+
+                    setTimeout(() => {
+                        window.location.href = `/data/${id}`;
+                    }, 1000);
 
                 } else {
                     console.log(`Error: ${result.message}`);

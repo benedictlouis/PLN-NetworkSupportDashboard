@@ -17,6 +17,8 @@ const Detail = () => {
     const [showDone, setShowDone] = useState(false); // State untuk form
     const [existingData, setExistingData] = useState({});
 
+    const userId = sessionStorage.getItem("userId");
+
     // console.log(sessionStorage.getItem("userId"));
     // console.log(sessionStorage.getItem("username"));
     // console.log(sessionStorage.getItem("userRole"));
@@ -128,6 +130,7 @@ const Detail = () => {
                     solusi_keterangan: null,
                     tanggal_selesai: null,
                     jam_selesai: null,
+                    edited_by: userId,
                 }),
             });
 
@@ -155,6 +158,7 @@ const Detail = () => {
                     solusi_keterangan: null, // Menghapus data solusi
                     tanggal_selesai: null, // Menghapus tanggal selesai
                     jam_selesai: null, // Menghapus jam selesai
+                    edited_by: userId,
                 }),
             });
 
