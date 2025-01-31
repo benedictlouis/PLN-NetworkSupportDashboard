@@ -18,6 +18,8 @@ const Register = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [toasts, setToasts] = useState([]);
 
+    const userRole = sessionStorage.getItem("userRole");
+
     const addToast = (type, message) => {
         const id = new Date().getTime();
         setToasts([...toasts, { id, type, message }]);
@@ -39,11 +41,12 @@ const Register = () => {
             return;
         }
         try {
-            const response = await fetch("http://localhost:5433/user/register", {
+            const response = await fetch("http://localhost:5433/user/create-account", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
+                credentials: "include",
                 body: JSON.stringify({ username, password, role }),
             });
             const data = await response.json();

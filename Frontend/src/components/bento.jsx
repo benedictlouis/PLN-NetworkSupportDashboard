@@ -97,7 +97,7 @@ const Bento = () => {
             </div>
 
             <div className="col-span-2 row-span-1 bg-gray-100 rounded-3xl flex flex-col justify-center items-center text-black py-4 px-4 shadow">
-                <div className="flex flex-row gap-x-20 max-md:gap-x-6">
+                <div className="flex flex-row gap-x-16 max-md:gap-x-6">
                     {["resolved", "in progress", "pending"].map((statusName) => {
                         const status = sumStatusData.find(
                             (item) => item.status_kerja.toLowerCase() === statusName

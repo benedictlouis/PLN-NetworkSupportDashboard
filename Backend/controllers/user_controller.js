@@ -48,6 +48,7 @@ exports.getAllAccounts = async (req, res) => {
 
 exports.createUserAccount = async (req, res) => {
     console.log("Request received to create account");
+    console.log("Session Data:", req.session);
 
     const { username, password, role } = req.body;
 

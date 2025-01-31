@@ -6,12 +6,11 @@ const AccountManagement = () => {
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState(null);
-    const [formData, setFormData] = useState({ username: "", password: "", role: "Admin" });
+    const [formData, setFormData] = useState({ username: "", password: "", confirmPassword: "", role: "Admin" });
+    const [passwordError, setPasswordError] = useState("");
 
     const userRole = sessionStorage.getItem("userRole");
-    const token = sessionStorage.getItem("SESSION_SECRET");
 
-    // 🛑 Hanya Admin yang boleh melihat akun
     useEffect(() => {
         if (userRole !== "Admin") {
             setError("Anda tidak memiliki izin untuk melihat akun.");
@@ -41,27 +40,31 @@ const AccountManagement = () => {
         };
 
         fetchAccounts();
-    }, [userRole, token]);
+    }, [userRole]);
 
-    // Fungsi membuka modal edit
     const openEditModal = (account) => {
         setSelectedAccount(account);
         setFormData({
             username: account.username,
             password: "",
+            confirmPassword: "",
             role: account.role
         });
         setIsEditing(true);
+        setPasswordError("");
     };
 
-    // Fungsi menangani input form
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Fungsi update akun
     const handleUpdate = async () => {
+        if (formData.password && formData.password !== formData.confirmPassword) {
+            setPasswordError("Password dan konfirmasi password tidak cocok.");
+            return;
+        }
+
         try {
             const response = await fetch("http://localhost:5433/user/update-accounts", {
                 method: "PUT",
@@ -76,7 +79,6 @@ const AccountManagement = () => {
 
             if (!response.ok) throw new Error("Gagal memperbarui akun");
 
-            // Ambil ulang data dari server setelah update
             const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
             const updatedData = await updatedResponse.json();
             setAccounts(updatedData.accounts);
@@ -86,7 +88,6 @@ const AccountManagement = () => {
         }
     };
 
-    // Fungsi delete akun
     const handleDelete = async (id) => {
         if (!window.confirm("Apakah Anda yakin ingin menghapus akun ini?")) return;
 
@@ -97,7 +98,6 @@ const AccountManagement = () => {
 
             if (!response.ok) throw new Error("Gagal menghapus akun");
 
-            // Ambil ulang data setelah akun dihapus
             const updatedResponse = await fetch("http://localhost:5433/user/all-accounts");
             const updatedData = await updatedResponse.json();
             setAccounts(updatedData.accounts);
@@ -110,33 +110,32 @@ const AccountManagement = () => {
     if (error) return <p className="text-center text-red-500">Error: {error}</p>;
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Manajemen Akun</h1>
+        <div className="">
             <div className="bg-white p-4 shadow-md rounded-lg">
                 <table className="w-full border-collapse border border-gray-300">
                     <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border p-2">ID</th>
-                            <th className="border p-2">Username</th>
-                            <th className="border p-2">Role</th>
-                            <th className="border p-2">Aksi</th>
+                        <tr className="bg-pln">
+                            <th className="border p-3">ID</th>
+                            <th className="border p-3">Username</th>
+                            <th className="border p-3">Role</th>
+                            <th className="border p-3"></th>
                         </tr>
                     </thead>
                     <tbody>
                         {accounts.map((account) => (
-                            <tr key={account.id} className="text-center">
-                                <td className="border p-2">{account.id}</td>
-                                <td className="border p-2">{account.username}</td>
-                                <td className="border p-2">{account.role}</td>
-                                <td className="border p-2 space-x-2">
+                            <tr key={account.id} className="text-center text-gray-700">
+                                <td className="border p-3">{account.id}</td>
+                                <td className="border p-3">{account.username}</td>
+                                <td className="border p-3">{account.role}</td>
+                                <td className="border p-3 space-x-4">
                                     <button
-                                        className="bg-blue-500 text-white px-3 py-1 rounded"
+                                        className="bg-black text-white rounded hover:bg-blue-700 hover:outline-none px-4 py-1"
                                         onClick={() => openEditModal(account)}
                                     >
                                         Edit
                                     </button>
                                     <button
-                                        className="bg-red-500 text-white px-3 py-1 rounded"
+                                        className="bg-black text-white rounded hover:bg-red-700 hover:outline-none px-4 py-1"
                                         onClick={() => handleDelete(account.id)}
                                     >
                                         Hapus
@@ -152,45 +151,57 @@ const AccountManagement = () => {
             {isEditing && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
                     <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                        <h2 className="text-xl font-bold mb-4">Edit Akun</h2>
-                        <label className="block text-sm font-semibold">Username</label>
+                        <h2 className="text-lg text-black font-bold mb-4">Edit Akun</h2>
+                        <label className="block text-sm font-medium text-gray-700">Username</label>
                         <input
                             type="text"
                             name="username"
                             value={formData.username}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded mb-3"
+                            className="w-full p-3 border rounded-md bg-white text-gray-700 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         />
 
-                        <label className="block text-sm font-semibold">Password (opsional)</label>
+                        <label className="mt-4 block text-sm font-medium text-gray-700">Password baru (opsional)</label>
                         <input
                             type="password"
                             name="password"
-                            placeholder="Isi jika ingin mengubah password"
+                            placeholder="Password"
+                            value={formData.password}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded mb-3"
+                            className="w-full p-3 border rounded-md bg-white text-gray-700 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         />
 
-                        <label className="block text-sm font-semibold">Role</label>
+                        <label className="mt-4 block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <input
+                            type="password"
+                            name="confirmPassword"
+                            placeholder="Confirm password"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            className="w-full p-3 border rounded-md bg-white text-gray-700 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        />
+                        {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
+
+                        <label className="mt-4 block text-sm font-medium text-gray-700">Role</label>
                         <select
                             name="role"
                             value={formData.role}
                             onChange={handleChange}
-                            className="w-full p-2 border rounded mb-4"
+                            className="w-full p-3 border rounded-md bg-white text-gray-700 border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                         >
                             <option value="Admin">Admin</option>
                             <option value="Support">Support</option>
                         </select>
 
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end pt-8">
                             <button
-                                className="bg-gray-400 text-white px-4 py-2 rounded"
+                                className="mr-2 px-4 py-2 bg-white text-red-700 rounded outline-none"
                                 onClick={() => setIsEditing(false)}
                             >
                                 Cancel
                             </button>
                             <button
-                                className="bg-blue-500 text-white px-4 py-2 rounded"
+                                className="px-4 py-2 bg-[#1C94AC] text-white rounded hover:bg-opacity-90"
                                 onClick={handleUpdate}
                             >
                                 Simpan

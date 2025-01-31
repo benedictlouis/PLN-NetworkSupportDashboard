@@ -3,19 +3,21 @@ import Navbar from '../components/navbar';
 import AccountManagement from '../components/accManagement';
 
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const AccountManagePage = () => {
-
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+        setIsLoggedIn(isLoggedIn === "true");
 
         if (isLoggedIn === "false") {
             navigate('/login');
         }
     }, [navigate]);
+    
 
     return (
         <div className="w-screen min-h-screen relative bg-[#fafafa] pt-2">
@@ -30,6 +32,28 @@ const AccountManagePage = () => {
 
                 <AccountManagement />
             </div>
+            {isLoggedIn && (
+                <button
+                    onClick={() => (window.location.href = "/register")}
+                    className="fixed bottom-6 right-6 w-14 h-14 bg-black-700 hover:bg-[#1C94AC] text-white rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 z-50"
+                    aria-label="Tambah"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-6 h-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 4v16m8-8H4"
+                        />
+                    </svg>
+                </button>
+            )}
         </div>
     )
 }
