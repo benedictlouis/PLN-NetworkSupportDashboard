@@ -13,6 +13,8 @@ export default function Navbar() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [toasts, setToasts] = useState([]);
 
+    const username = sessionStorage.getItem("username");
+
     useEffect(() => {
         const loginStatus = sessionStorage.getItem("isLoggedIn");
         setIsLoggedIn(loginStatus === "true");
@@ -72,7 +74,7 @@ export default function Navbar() {
                                         className={classNames(
                                             nav.title === "Log In" ? 'hover:bg-green-500' : 'hover:bg-[#1C94AC]',
                                             nav.title === "Log Out" ? 'hover:bg-red-500' : 'hover:bg-[#1C94AC]',
-                                            'text-black bg-[#f9f9f9] rounded-3xl px-6 py-2 text-sm font-medium transition ease-in duration-150 shadow',
+                                            'text-black bg-[#f9f9f9] rounded-3xl px-6 py-2 text-sm max-md:px-4 font-medium transition ease-in duration-150 shadow',
                                         )}
                                         onClick={() => {
                                             if (nav.id === "login" && isLoggedIn) {
@@ -93,6 +95,13 @@ export default function Navbar() {
                                 <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
                             </Disclosure.Button>
                         </div>
+
+                        {/* Username displayed on the right */}
+                        {isLoggedIn && username && (
+                                    <span className="max-md:hidden -ml-28 text-sm font-medium text-black">
+                                        Welcome, {username}!
+                                    </span>
+                                )}
                     </div>
                 </div>
 
