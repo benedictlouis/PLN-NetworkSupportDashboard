@@ -73,12 +73,13 @@ exports.addData = async (req, res) => {
         const { rows: historyRows } = await pool.query(checkHistoryQuery, [newId]);
 
         if (historyRows.length === 0) {
-            // Simpan ke history bahwa pekerjaan telah dibuat hanya jika belum ada history sebelumnya
+            // Simpan ke history bahwa pekerjaan telah dibuat dengan pesan yang lebih singkat
             const historyQuery = `
                 INSERT INTO history (changes_id, column_name, old_value, new_value, username)
-                VALUES ($1, 'created', NULL, 'Pekerjaan dibuat', $2)
+                VALUES ($1, 'created', NULL, $2, $3)
             `;
-            await pool.query(historyQuery, [newId, username]);
+            const historyMessage = `${username} telah membuat pekerjaan baru`;
+            await pool.query(historyQuery, [newId, historyMessage, username]);
         }
 
         res.status(201).json({ message: 'Data added successfully', id: newId });
@@ -104,6 +105,7 @@ exports.updateData = async (req, res) => {
     }
 
     try {
+        // Ambil data lama
         const oldDataQuery = 'SELECT * FROM network_support WHERE id = $1';
         const { rows: oldDataRows } = await pool.query(oldDataQuery, [id]);
 
@@ -112,53 +114,51 @@ exports.updateData = async (req, res) => {
         }
         const oldData = oldDataRows[0];
 
+        // Ambil username berdasarkan edited_by
         const usernameQuery = 'SELECT username FROM users WHERE id = $1';
         const { rows: usernameRows } = await pool.query(usernameQuery, [edited_by]);
 
         if (!usernameRows.length) {
             return res.status(404).json({ message: 'User not found' });
         }
-
         const username = usernameRows[0].username;
 
+        // Siapkan query untuk update
         const fieldsToUpdate = [];
         const values = [];
         let query = 'UPDATE network_support SET ';
 
         // Loop untuk mendeteksi perubahan
-        Object.entries({ minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja, nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan, detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai }).forEach(([key, value]) => {
-            if (value && value !== oldData[key]) {
+        Object.entries({
+            minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
+            nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
+            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
+        }).forEach(([key, value]) => {
+            if (value !== undefined && value !== oldData[key]) { // Pastikan nilai baru berbeda
                 fieldsToUpdate.push(`${key} = $${fieldsToUpdate.length + 1}`);
                 values.push(value);
             }
         });
 
         if (fieldsToUpdate.length > 0) {
+            // Tambahkan edited_by ke query
+            fieldsToUpdate.push(`edited_by = $${fieldsToUpdate.length + 1}`);
+            values.push(edited_by);
+
             query += fieldsToUpdate.join(', ') + ' WHERE id = $' + (fieldsToUpdate.length + 1);
             values.push(id);
 
+            // Eksekusi query update
             await pool.query(query, values);
 
-            // Insert history entries
-            for (let i = 0; i < fieldsToUpdate.length; i++) {
-                const columnName = fieldsToUpdate[i].split(' ')[0];
-                const oldValue = oldData[columnName];
-                const newValue = values[i];
-
-                const historyQuery = `
-                    INSERT INTO history (changes_id, column_name, old_value, new_value, username)
-                    VALUES ($1, $2, $3, $4, $5)
-                `;
-                await pool.query(historyQuery, [id, columnName, oldValue, newValue, username]);
-            }
-
+            // Tidak perlu menyimpan history secara manual jika sudah menggunakan trigger
             res.status(200).json({ message: 'Data updated successfully' });
         } else {
             res.status(400).json({ message: 'No valid fields to update' });
         }
     } catch (error) {
         console.error('Error in updateData:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
 
@@ -265,16 +265,11 @@ exports.getHistoryByTaskId = async (req, res) => {
     try {
         const query = `
             SELECT 
-                MIN(date) as date, -- Ambil tanggal paling lama atau bisa diganti MAX(date) untuk terbaru
-                username, 
-                column_name, 
-                old_value, 
-                new_value
+                *
             FROM history
             WHERE changes_id = $1
-            AND username IS NOT NULL
-            GROUP BY username, column_name, old_value, new_value
-            ORDER BY date DESC;
+            AND column_name != 'edited_by' -- Exclude edited_by
+            ORDER BY date DESC; -- Sort by latest first
         `;
 
         const { rows } = await pool.query(query, [id]);

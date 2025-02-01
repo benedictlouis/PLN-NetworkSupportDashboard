@@ -224,6 +224,74 @@ ALTER TYPE minggu_enum ADD VALUE 'Minggu 5';
 
 
 
+-- Terbaru Fix
+DROP TRIGGER IF EXISTS track_changes ON network_support;
+DROP FUNCTION IF EXISTS log_history();
+
+CREATE OR REPLACE FUNCTION log_history()
+RETURNS TRIGGER AS $$
+DECLARE
+    col_name TEXT;  -- Nama kolom
+    old_value TEXT;  -- Nilai lama
+    new_value TEXT;  -- Nilai baru
+    username TEXT; -- Username yang melakukan perubahan
+BEGIN
+    -- Ambil username dari edited_by yang terkait
+    SELECT u.username INTO username
+    FROM users u
+    WHERE u.id = NEW.edited_by;
+
+    -- Loop melalui semua kolom yang dimonitor
+    FOR col_name IN
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = 'network_support'
+    LOOP
+        -- Khusus untuk kolom bertipe array (contoh: 'pic')
+        IF col_name = 'pic' THEN
+            old_value := ARRAY_TO_STRING(OLD.pic, ', ');
+            new_value := ARRAY_TO_STRING(NEW.pic, ', ');
+        ELSE
+            -- Ambil nilai lama dan baru dari kolom non-array
+            EXECUTE FORMAT(
+                'SELECT ($1).%I::TEXT, ($2).%I::TEXT',
+                col_name, col_name
+            )
+            INTO old_value, new_value
+            USING OLD, NEW;
+        END IF;
+
+        -- Jika nilai berubah, simpan ke tabel history
+        IF old_value IS DISTINCT FROM new_value THEN
+            INSERT INTO history (
+                date, username, changes_id, column_name, old_value, new_value
+            )
+            VALUES (
+                NOW(), username, NEW.id, col_name, old_value, new_value
+            );
+        END IF;
+    END LOOP;
+
+    -- Jika ada perubahan pada kolom edited_by, simpan perubahan tersebut
+    IF OLD.edited_by IS DISTINCT FROM NEW.edited_by THEN
+        INSERT INTO history (
+            date, username, changes_id, column_name, old_value, new_value
+        )
+        VALUES (
+            NOW(), username, NEW.id, 'edited_by', OLD.edited_by::TEXT, NEW.edited_by::TEXT
+        );
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER track_changes
+AFTER UPDATE ON network_support
+FOR EACH ROW
+EXECUTE FUNCTION log_history();
+
+
 
 -- Test Data input network_support
 /* Valid Input test*/
