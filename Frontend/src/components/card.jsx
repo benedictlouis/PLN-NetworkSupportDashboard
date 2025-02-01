@@ -23,7 +23,17 @@ const Card = ({ reports }) => {
                     <p className="mb-3 font-normal text-gray-500">
                         Tanggal Laporan: {formatDate(report.tanggal_awal)} <br />
                         Jam Laporan: {report.jam_awal.replace(":00", "")} WIB <br />
-                        Pelapor: {report.nama_pelapor_telepon} <br />
+                        Pelapor: {report.nama_pelapor_telepon
+                                ? (() => {
+                                    const lastDashIndex = report.nama_pelapor_telepon.lastIndexOf(" - ");
+                                    if (lastDashIndex === -1) return report.nama_pelapor_telepon.trim(); // Jika tidak ada " - ", tampilkan apa adanya
+
+                                    const nama = report.nama_pelapor_telepon.slice(0, lastDashIndex).trim();
+                                    const telepon = report.nama_pelapor_telepon.slice(lastDashIndex + 3).trim(); // +3 karena " - " memiliki 3 karakter
+
+                                    return [nama, telepon].filter(Boolean).join(" - ") || "-";
+                                })()
+                                : "-"} <br />
                         Divisi: {report.divisi || "-"} <br />
                         Lokasi: {report.lokasi || "-"} <br />
                     </p>
