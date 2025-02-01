@@ -131,7 +131,7 @@ const ListPage = () => {
                         className="border p-2 bg-white text-gray-700 w-full"
                     >
                         <option value="">Minggu</option>
-                        {[...Array().keys()].map((week) => (
+                        {[...Array(5).keys()].map((week) => (
                             <option key={week + 1} value={week + 1}>
                                 {week + 1}
                             </option>
