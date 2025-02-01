@@ -23,7 +23,7 @@ const Bento = () => {
     useEffect(() => {
         axios.get('http://localhost:5433/chart/duration-by-category')
             .then(response => {
-                console.log('API response: ', response.data)
+                // console.log('API response: ', response.data)
                 setDurationsByCategoryData(response.data)
             })
             .catch(error => console.error('Error fetching durations by category:', error));

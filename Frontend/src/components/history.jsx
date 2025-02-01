@@ -11,7 +11,7 @@ const History = () => {
         const fetchHistory = async () => {
             try {
                 const response = await fetch(`http://localhost:5433/data/history/${id}`);
-                
+
                 if (response.status === 404) {
                     setHistory([]);
                     return;
@@ -30,7 +30,11 @@ const History = () => {
             }
         };
 
-        fetchHistory();
+        // Memanggil fetchHistory secara berkala
+        const intervalId = setInterval(fetchHistory, 3000); // update setiap 5 detik
+
+        // Cleanup interval saat komponen dibuang
+        return () => clearInterval(intervalId);
     }, [id]);
 
     if (loading) return <p className="text-center">Loading history...</p>;
@@ -58,22 +62,56 @@ const History = () => {
 
     const formatValue = (column, value) => {
         if (column.toLowerCase().includes("tanggal")) {
+            if (!value) return "-";
+
             const formatTanggal = new Date(value).toLocaleDateString("id-ID", {
                 day: "2-digit",
                 month: "long",
                 year: "numeric",
             });
 
-            if(formatTanggal === "01 Januari 1970") return "-";
-
-            return formatTanggal;
+            return formatTanggal === "01 Januari 1970" ? "-" : formatTanggal;
         }
+
         if (column.toLowerCase().includes("jam")) {
-            return new Date(value).toLocaleTimeString("id-ID", {
+            if (!value) return "-";
+
+            const parsedTime = new Date(`1970-01-01T${value}`);
+            if (isNaN(parsedTime)) return "-";
+
+            return parsedTime.toLocaleTimeString("id-ID", {
                 hour: "2-digit",
                 minute: "2-digit",
             }).replace(":", ".") + " WIB";
         }
+
+        if (column.toLowerCase().includes("nama_pelapor_telepon")) {
+            if (!value) return "-";
+
+            const lastDashIndex = value.lastIndexOf(" - ");
+
+            let namaPelapor, teleponPelapor;
+
+            if (lastDashIndex !== -1) {
+                namaPelapor = value.slice(0, lastDashIndex).trim();
+                teleponPelapor = value.slice(lastDashIndex + 3).trim(); // +3 karena " - " memiliki 3 karakter
+            } else {
+                namaPelapor = value.trim(); // Jika tidak ada "-", anggap semuanya adalah nama
+                teleponPelapor = "";
+            }
+
+            // **Aturan tampilan**
+            if (namaPelapor && teleponPelapor) {
+                return `${namaPelapor} - ${teleponPelapor}`;
+            } else if (namaPelapor) {
+                return namaPelapor;
+            } else if (teleponPelapor) {
+                return teleponPelapor;
+            } else {
+                return "-";
+            }
+        }
+
         return value || "-";
     };
 
@@ -96,23 +134,31 @@ const History = () => {
                                             minute: "2-digit",
                                         }).replace(":", ".") + " WIB"}
                                     </p>
-                                    <p className="text-sm font-normal text-gray-700">
-                                        <span className="font-medium text-black">{item.username}</span> mengubah
-                                        <span className="font-medium text-black"> {formatColumnName(item.column_name)}</span>.
-                                    </p>
-                                    <p className="pt-1 text-xs text-gray-500 flex items-center">
-                                        {formatValue(item.column_name, item.old_value)}
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="12"
-                                            height="12"
-                                            className="mx-1"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path d="M7.293 4.707 14.586 12l-7.293 7.293 1.414 1.414L17.414 12 8.707 3.293 7.293 4.707z" />
-                                        </svg>
-                                        {formatValue(item.column_name, item.new_value)}
-                                    </p>
+                                    {item.column_name === "created" && item.new_value.includes("telah membuat pekerjaan baru") ? (
+                                        <p className="text-sm font-normal text-gray-700">
+                                            <span className="font-medium text-black">{item.username}</span> menambahkan pekerjaan.
+                                        </p>
+                                    ) : (
+                                        <>
+                                            <p className="text-sm font-normal text-gray-700">
+                                                <span className="font-medium text-black">{item.username}</span> mengubah
+                                                <span className="font-medium text-black"> {formatColumnName(item.column_name)}</span>.
+                                            </p>
+                                            <p className="pt-1 text-xs text-gray-500 flex items-center">
+                                                {formatValue(item.column_name, item.old_value)}
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="12"
+                                                    height="12"
+                                                    className="mx-1"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path d="M7.293 4.707 14.586 12l-7.293 7.293 1.414 1.414L17.414 12 8.707 3.293 7.293 4.707z" />
+                                                </svg>
+                                                {formatValue(item.column_name, item.new_value)}
+                                            </p>
+                                        </>
+                                    )}
                                 </li>
                             ))}
                         </ol>

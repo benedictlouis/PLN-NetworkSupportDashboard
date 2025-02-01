@@ -11,7 +11,7 @@ const EditPage = () => {
 
         if (isLoggedIn === "false") {
             navigate('/login');
-        } else if (sessionStorage.getItem("userRole") != "Admin"){
+        } else if (sessionStorage.getItem("userRole") != "Admin") {
             navigate('/dashboard');
         };
     }, [navigate]);
@@ -22,8 +22,10 @@ const EditPage = () => {
 
             <div className="flex flex-col items-center justify-center pl-6 pr-6 pt-16 pb-6">
                 <div className="flex flex-col items-center justify-center w-full">
-                    <h1 className="font-bold text-[60px] text-gradient pt-4 pb-4">Edit Entry</h1>
-                    <h2 className="text-[20px] text-gray-500 pb-6">Edit informasi detail pekerjaan yang ada</h2>
+                    <h1 className="font-bold max-md:hidden text-[60px] text-gradient pt-4 pb-2">Edit Pekerjaan</h1>
+                    <h2 className="max-md:hidden text-[20px] text-gray-700 pb-6">Edit informasi detail pekerjaan yang ada</h2>
+                    <h1 className="font-bold md:hidden md:text-[48px] text-gradient pt-4 pb-2">Edit Pekerjaan</h1>
+                    <h2 className="md:hidden md:text-[16px] text-gray-700 pb-6">Edit informasi detail pekerjaan yang ada</h2>
                 </div>
 
                 <div className="flex justify-center h-full pt-4 bg-[#fafafa]">

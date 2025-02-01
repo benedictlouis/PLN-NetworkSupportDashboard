@@ -1,17 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/navbar';
 import Form from '../components/form';
 
 const AddPage = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+        setIsLoggedIn(isLoggedIn === "true");
 
         if (isLoggedIn === "false") {
             navigate('/login');
-        }
+        } else if (sessionStorage.getItem("userRole") != "Admin"){
+            navigate('/dashboard');
+        };
     }, [navigate]);
 
     return (

@@ -131,7 +131,7 @@ const ListPage = () => {
                         className="border p-2 bg-white text-gray-700 w-full"
                     >
                         <option value="">Minggu</option>
-                        {[...Array(4).keys()].map((week) => (
+                        {[...Array().keys()].map((week) => (
                             <option key={week + 1} value={week + 1}>
                                 {week + 1}
                             </option>
@@ -210,8 +210,8 @@ const ListPage = () => {
                         onChange={(e) => setNewestFilter(e.target.value)}
                         className="border p-2 bg-white text-gray-700 w-full"
                     >
-                        <option value="newest">Newest</option>
-                        <option value="latest">Latest</option>
+                        <option value="newest">Terbaru</option>
+                        <option value="latest">Terlama</option>
                     </select>
                 </div>
             </div>
@@ -228,7 +228,7 @@ const ListPage = () => {
                 )}
             </div>
 
-            {isLoggedIn && (
+            {isLoggedIn && sessionStorage.getItem("userRole") === "Admin" && (
                 <button
                     onClick={() => (window.location.href = "/add")}
                     className="fixed bottom-6 right-6 w-14 h-14 bg-black-700 hover:bg-[#1C94AC] text-white rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 z-50"

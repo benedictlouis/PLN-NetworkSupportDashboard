@@ -80,9 +80,18 @@ const EditForm = () => {
                     throw new Error(`Error fetching job details: ${response.statusText}`);
                 }
                 const data = await response.json(); // Parse respons JSON
-                console.log("data diterima:\n");
-                console.log(data);
-                const [namaPelapor, teleponPelapor] = data.nama_pelapor_telepon.split(" - ");
+                // console.log("data diterima:\n");
+                // console.log(data);
+                
+                const lastDashIndex = data.nama_pelapor_telepon.lastIndexOf(" - ");
+                let namaPelapor = data.nama_pelapor_telepon;
+                let teleponPelapor = "";
+
+                if (lastDashIndex !== -1) {
+                    namaPelapor = data.nama_pelapor_telepon.slice(0, lastDashIndex).trim();
+                    teleponPelapor = data.nama_pelapor_telepon.slice(lastDashIndex + 3).trim(); // +3 karena " - " memiliki 3 karakter
+                }
+
                 setFormData({
                     kategori: data.kategori_pekerjaan,
                     nama: namaPelapor,
@@ -100,6 +109,9 @@ const EditForm = () => {
                     solusi_keterangan: data.solusi_keterangan,
                     edited_by: data.edited_by,
                 });
+
+                // console.log("Hasil masukkan data ke formData:\n");
+                // console.log(formData);
 
             } catch (error) {
                 console.error("Error fetching job details:", error);
@@ -151,10 +163,21 @@ const EditForm = () => {
             newErrors.jam = "Wajib diisi.";
         }
 
+        if (!formData.tanggal_selesai && formData.status === "Resolved") {
+            newErrors.tanggal = "Wajib diisi.";
+        }
+
+        if (!formData.jam_selesai && formData.status === "Resolved") {
+            newErrors.jam = "Wajib diisi.";
+        }
+
+        if (!formData.solusi_keterangan && formData.status === "Resolved") {
+            newErrors.solusi_keterangan = "Wajib diisi";
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -165,25 +188,39 @@ const EditForm = () => {
             const tanggal_awal_full = `${formData.tanggal}T${formData.jam}:00`;
 
             // Parse the date for additional details
-            const parsedDate = new Date(tanggal_awal_full);
-            const minggu = Math.ceil(parsedDate.getDate() / 7); // Week of the month
-            const bulan = parsedDate.getMonth() + 1; // Month (1-12)
-            const tahun = parsedDate.getFullYear(); // Year
+            const parsedDateAwal = new Date(tanggal_awal_full);
+            const mingguAwal = Math.ceil(parsedDateAwal.getDate() / 7); // Week of the month
+            const bulanAwal = parsedDateAwal.getMonth() + 1; // Month (1-12)
+            const tahunAwal = parsedDateAwal.getFullYear(); // Year
 
             const monthNames = [
                 "Januari", "Februari", "Maret", "April", "Mei", "Juni",
                 "Juli", "Agustus", "September", "Oktober", "November", "Desember"
             ];
 
-            const bulanNama = monthNames[parseInt(bulan) - 1];
+            const bulanNamaAwal = monthNames[parseInt(bulanAwal) - 1];
+
+            if (formData.tanggal_selesai != "" && formData.jam_selesai != "") {
+                const tanggal_selesai_full = `${formData.tanggal_selesai}T${formData.jam_selesai}:00`;
+
+                const parsedDateSelesai = new Date(tanggal_selesai_full);
+                const mingguSelesai = Math.ceil(parsedDateSelesai.getDate() / 7); // Week of the month
+                const bulanSelesai = parsedDateSelesai.getMonth() + 1; // Month (1-12)
+                const tahunSelesai = parsedDateSelesai.getFullYear(); // Year
+
+                const bulanNamaSelesai = monthNames[parseInt(bulanSelesai) - 1];
+
+                formData.tanggal_selesai = `${tanggal_selesai_full}.000Z`;
+                formData.jam_selesai = `${formData.jam_selesai}:00`;
+            }
 
             const userId = sessionStorage.getItem("userId");
 
             // Create the payload from the form data
             const formDataToSubmit = {
-                minggu: `Minggu ${minggu}`,
-                bulan: bulanNama,
-                tahun: tahun,
+                minggu: `Minggu ${mingguAwal}`,
+                bulan: bulanNamaAwal,
+                tahun: tahunAwal,
                 tanggal_awal: `${tanggal_awal_full}.000Z`,
                 jam_awal: `${formData.jam}:00`,
                 status_kerja: `${formData.status}`,
@@ -193,11 +230,13 @@ const EditForm = () => {
                 kategori_pekerjaan: formData.kategori,
                 detail_pekerjaan: formData.detail,
                 pic: `{${formData.pic.join(',')}}`,
-                solusi_keterangan: null,
-                tanggal_selesai: null,
-                jam_selesai: null,
+                solusi_keterangan: formData.solusi_keterangan || null,
+                tanggal_selesai: `${formData.tanggal_selesai}` || null,
+                jam_selesai: formData.jam_selesai || null,
                 edited_by: userId,
             };
+
+            // console.log(formDataToSubmit);
 
             try {
                 const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
@@ -529,53 +568,62 @@ const EditForm = () => {
 
             {/* Tanggal Selesai dan Jam Selesai */}
             {formData.status === "Resolved" && (
-                <div className="flex -mx-3 mb-6">
-                    <div className="w-1/2 px-3">
-                        <label
-                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                            htmlFor="lokasi"
-                        >
-                            Waktu Selesai
-                        </label>
-                        <label
-                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                            htmlFor="tanggal_selesai"
-                        >
-                            Tanggal Selesai
-                        </label>
-                        <input
-                            className="block w-full bg-white text-gray-700 border py-3 px-4 rounded"
-                            id="tanggal_selesai"
-                            type="date"
-                            value={formData.tanggal_selesai}
-                            onChange={handleChange}
-                        />
-                        {errors.tanggalSelesai && (
-                            <p className="text-red-500 text-xs italic">{errors.tanggal}</p>
-                        )}
+                <div className="mb-6">
+                    <div className="flex -mx-3">
+                        <div className="w-1/2 px-3">
+                            <label
+                                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                                htmlFor="tanggal_selesai"
+                            >
+                                Tanggal Selesai
+                            </label>
+                            <input
+                                className="block w-full bg-white text-gray-700 border py-3 px-4 rounded"
+                                id="tanggal_selesai"
+                                type="date"
+                                value={formData.tanggal_selesai}
+                                onChange={handleChange}
+                            />
+                            {errors.tanggalSelesai && (
+                                <p className="text-red-500 text-xs italic">{errors.tanggalSelesai}</p>
+                            )}
+                        </div>
+                        <div className="w-1/2 px-3">
+                            <label
+                                className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                                htmlFor="jam_selesai"
+                            >
+                                Jam Selesai
+                            </label>
+                            <input
+                                className="block w-full bg-white text-gray-700 border py-3 px-4 rounded"
+                                id="jam_selesai"
+                                type="time"
+                                value={formData.jam_selesai}
+                                onChange={handleChange}
+                            />
+                            {errors.jamSelesai && (
+                                <p className="text-red-500 text-xs italic">{errors.jamSelesai}</p>
+                            )}
+                        </div>
                     </div>
-                    <div className="w-1/2 px-3">
+
+                    <div className="mt-4">
                         <label
                             className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                            htmlFor="lokasi"
+                            htmlFor="solusi_keterangan"
                         >
-                            <br />
+                            Solusi
                         </label>
-                        <label
-                            className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                            htmlFor="jam_selesai"
-                        >
-                            Jam Selesai
-                        </label>
-                        <input
+                        <textarea
                             className="block w-full bg-white text-gray-700 border py-3 px-4 rounded"
-                            id="jam_selesai"
-                            type="time"
-                            value={formData.jam_selesai}
+                            id="solusi_keterangan"
+                            rows="3"
+                            value={formData.solusi_keterangan}
                             onChange={handleChange}
                         />
-                        {errors.jamSelesai && (
-                            <p className="text-red-500 text-xs italic">{errors.jam}</p>
+                        {errors.solusi_keterangan && (
+                            <p className="text-red-500 text-xs italic">{errors.solusi_keterangan}</p>
                         )}
                     </div>
                 </div>

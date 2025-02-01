@@ -4,10 +4,10 @@ import ReactECharts from 'echarts-for-react';
 const StatusDistribution = ({ data }) => {
     const getCategoryColor = (index) => {
         const colors = [
-            '#0747a1',
-            '#1a8ae5',
-            '#64b7f6',
-        ];
+            '#1C94AC', 
+            '#299DCA',
+            '#4AABDF',
+          ]; 
         return colors[index % colors.length];
     };
 

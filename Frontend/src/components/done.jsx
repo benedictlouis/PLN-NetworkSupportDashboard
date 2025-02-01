@@ -62,7 +62,7 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
                             name="solusi"
                             value={formData.solusi}
                             onChange={handleChange}
-                            className="mt-1 block w-full bg-white text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            className="mt-1 px-2 block w-full bg-white text-gray-700 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             rows="3"
                             required
                         ></textarea>

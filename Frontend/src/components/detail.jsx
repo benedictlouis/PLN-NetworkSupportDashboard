@@ -307,7 +307,19 @@ const Detail = () => {
                     </div>
                     <div className="col-span-1 pb-4">
                         <p className="text-sm text-gray-500">Nama - Telepon Pelapor</p>
-                        <p className="text-gray-700">{data.nama_pelapor_telepon}</p>
+                        <p className="text-gray-700">
+                            {data.nama_pelapor_telepon
+                                ? (() => {
+                                    const lastDashIndex = data.nama_pelapor_telepon.lastIndexOf(" - ");
+                                    if (lastDashIndex === -1) return data.nama_pelapor_telepon.trim(); // Jika tidak ada " - ", tampilkan apa adanya
+
+                                    const nama = data.nama_pelapor_telepon.slice(0, lastDashIndex).trim();
+                                    const telepon = data.nama_pelapor_telepon.slice(lastDashIndex + 3).trim(); // +3 karena " - " memiliki 3 karakter
+
+                                    return [nama, telepon].filter(Boolean).join(" - ") || "-";
+                                })()
+                                : "-"}
+                        </p>
                     </div>
                     <div className="col-span-1 pb-4">
                         <p className="text-sm text-gray-500">Divisi</p>

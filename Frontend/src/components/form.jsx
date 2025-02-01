@@ -146,8 +146,8 @@ const Form = () => {
                 const result = await response.json();
 
                 if (response.ok) {
-                    console.log("Form submitted successfully!");
-                    addToast('success', 'Form submitted successfully!');
+                    // console.log("Form submitted successfully!");
+                    addToast('success', 'Pekerjaan berhasil ditambahkan!');
                     setTimeout(() => window.location.href = "/list", 1000);
 
                 } else {

@@ -36,7 +36,7 @@ const DurationsByCategory = ({ data }) => {
             data: data.map(d => d.avg_duration_minutes),
             type: 'bar',
             smooth: false,
-            color: '#0747a1',
+            color: '#1C94AC',
             label: {
                 show: true,
                 position: 'top',

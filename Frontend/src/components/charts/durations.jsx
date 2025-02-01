@@ -35,8 +35,8 @@ const Durations = ({ data }) => {
       data: data.map(d => d.duration_minutes),
       type: 'line',
       smooth: false,
-      lineStyle: { color: '#0747a1' },
-      areaStyle: { color: '#1065c0' },
+      lineStyle: { color: '#1C94AC' },
+      areaStyle: { color: '#299DCA' },
     }],
   };
 
