@@ -17,6 +17,7 @@ const Form = () => {
         tanggal: "",
         jam: "",
         pic: [],
+        edited_by: "",
     });
 
     const [errors, setErrors] = useState({});
@@ -128,7 +129,7 @@ const Form = () => {
                 solusi_keterangan: null,
                 tanggal_selesai: null,
                 jam_selesai: null,
-                edited_by: null,
+                edited_by: userId,
             };
 
             console.log(formDataToSubmit);
