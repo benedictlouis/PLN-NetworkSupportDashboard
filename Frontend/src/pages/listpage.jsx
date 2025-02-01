@@ -129,7 +129,7 @@ const ListPage = () => {
                         <option value="">Minggu</option>
                         {[...Array(5).keys()].map((week) => (
                             <option key={week + 1} value={week + 1}>
-                                {`Minggu ${week + 1}`}
+                                {`${week + 1}`}
                             </option>
                         ))}
                     </select>
