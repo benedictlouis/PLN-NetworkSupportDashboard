@@ -45,13 +45,9 @@ const ListPage = () => {
             filtered = filtered.filter((task) => task.status_kerja === statusFilter);
         }
 
-        // Filter by minggu (week)
+        // Filter by minggu (week) with format "Minggu X"
         if (mingguFilter) {
-            filtered = filtered.filter((task) => {
-                const taskDate = new Date(task.tanggal_awal);
-                const taskWeek = getWeekNumber(taskDate);
-                return taskWeek === parseInt(mingguFilter);
-            });
+            filtered = filtered.filter((task) => task.minggu === `Minggu ${mingguFilter}`);
         }
 
         // Filter by bulan (month)
@@ -133,7 +129,7 @@ const ListPage = () => {
                         <option value="">Minggu</option>
                         {[...Array(5).keys()].map((week) => (
                             <option key={week + 1} value={week + 1}>
-                                {week + 1}
+                                {`Minggu ${week + 1}`}
                             </option>
                         ))}
                     </select>
