@@ -138,7 +138,7 @@ exports.jobsPerMonth = async (req, res) => {
       FROM network_support
       WHERE tanggal_awal IS NOT NULL
       GROUP BY year, month, month_year
-      ORDER BY year ASC, month ASC;
+      ORDER BY year ASC, month ASC, MIN(id) ASC;
     `);
     res.status(200).json(result.rows);
   } catch (err) {
@@ -146,3 +146,4 @@ exports.jobsPerMonth = async (req, res) => {
     res.status(500).json({ message: 'Error fetching jobs per month' });
   }
 };
+
