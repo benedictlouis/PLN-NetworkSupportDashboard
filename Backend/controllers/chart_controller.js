@@ -15,7 +15,8 @@ exports.getDurations = async (req, res) => {
       FROM network_support
       WHERE 
         tanggal_awal IS NOT NULL AND jam_awal IS NOT NULL AND 
-        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL;
+        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL
+      ORDER BY id ASC;
     `);
     res.status(200).json(result.rows);
   } catch (err) {
