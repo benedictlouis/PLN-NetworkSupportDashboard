@@ -224,7 +224,7 @@ const ListPage = () => {
                 )}
             </div>
 
-            {isLoggedIn && sessionStorage.getItem("userRole") === "Admin" && (
+            {isLoggedIn && (
                 <button
                     onClick={() => (window.location.href = "/add")}
                     className="fixed bottom-6 right-6 w-14 h-14 bg-black-700 hover:bg-[#1C94AC] text-white rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 z-50"

@@ -13,6 +13,7 @@ import AddPage from './pages/addpage';
 import EditPage from './pages/editpage';
 import AccManagePage from './pages/accManagePage';
 import RegisterPage from './pages/registerpage';
+import ValidationPage from './pages/validationpage';
 
 import './index.css';
 import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements, Navigate } from "react-router-dom";
@@ -31,6 +32,7 @@ const router = createBrowserRouter(
       <Route path="edit/:id" element={<EditPage />} />
       <Route path="accountManagement" element={<AccManagePage />} />
       <Route path="register" element={<RegisterPage />} />
+      <Route path="validation" element={<ValidationPage />} />
     </Route>
   )
 );

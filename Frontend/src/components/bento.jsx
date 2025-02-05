@@ -141,10 +141,10 @@ const Bento = () => {
                 </div>
             </div>
             <div className="col-span-3 row-span-2 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
-                <JobCategories data={jobCategories} />
+                <StatusDistribution data={statusDistributionData} />
             </div>
             <div className="col-span-3 row-span-2 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
-                <StatusDistribution data={statusDistributionData} />
+                <JobCategories data={jobCategories} />
             </div>
             <div className="col-span-3 row-span-2 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <Durations data={durationsData} />
