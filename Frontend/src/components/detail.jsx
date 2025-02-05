@@ -112,6 +112,22 @@ const Detail = () => {
         }
     };
 
+    const handleTolak = () => {
+        const confirmDelete = window.confirm("Tolak pekerjaan?");
+        if (confirmDelete) {
+            axios
+                .delete(`http://localhost:5433/data/delete/${id}`)
+                .then((response) => {
+                    addToast('success', 'Pekerjaan ditolak');
+                    setTimeout(() => window.location.href = `/list`, 2000);
+                })
+                .catch((error) => {
+                    console.error("Error deleting job:", error);
+                    addToast('error', 'Gagal menolak pekerjaan');
+                });
+        }
+    };
+
     const handleMarkAsCompleted = () => setShowDone(true);
     const handleCloseDone = () => setShowDone(false);
     const handleSuccessMarkAsSelesai = (updatedData) => {
@@ -170,6 +186,30 @@ const Detail = () => {
             addToast("success", "Status pekerjaan berhasil diubah");
         } catch (error) {
             addToast("error", "Gagal mengubah status pekerjaan");
+        }
+    };
+
+    const handleValidate = async () => {
+        try {
+            const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    edited_by: userId,
+                    is_validate: true,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update status to Pending");
+            }
+
+            const data = await response.json();
+            addToast("success", "Pekerjaan diterima");
+        } catch (error) {
+            addToast("error", "Gagal menerima pekerjaan");
         }
     };
 
@@ -362,28 +402,30 @@ const Detail = () => {
                     </div>
                 </div>
 
-                {isLoggedIn && sessionStorage.getItem("userRole") === "Admin" && (
+                {isLoggedIn && sessionStorage.getItem("userRole") === "Super Admin" && (
                     <div className="mt-8 ease-in transition-all duration-300 flex justify-between items-center">
                         {/* Tombol di kiri */}
-                        <div>
-                            <button
-                                onClick={handleEdit}
-                                className="mr-4 px-4 py-2 bg-black text-white rounded hover:bg-blue-700 hover:outline-none"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
-                            >
-                                Delete
-                            </button>
-                        </div>
+                        {data.is_validate === true && (
+                            <div>
+                                <button
+                                    onClick={handleEdit}
+                                    className="mr-4 px-4 py-2 bg-black text-white rounded hover:bg-blue-700 hover:outline-none"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        )}
 
                         {/* Tombol di kanan */}
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 relative">
                             {/* Tombol Selesai */}
-                            {data.status_kerja !== "Resolved" && (
+                            {data.status_kerja !== "Resolved" && data.is_validate === true && (
                                 <button
                                     onClick={handleMarkAsCompleted}
                                     className="px-4 py-2 bg-black text-white rounded hover:bg-green-700"
@@ -393,7 +435,7 @@ const Detail = () => {
                             )}
 
                             {/* Tombol In Progress */}
-                            {data.status_kerja !== "In Progress" && (
+                            {data.status_kerja !== "In Progress" && data.is_validate === true && (
                                 <button
                                     onClick={handleMarkAsInProgress}
                                     className="px-4 py-2 bg-black text-white rounded hover:bg-yellow-700"
@@ -403,13 +445,114 @@ const Detail = () => {
                             )}
 
                             {/* Tombol Pending */}
-                            {data.status_kerja !== "Pending" && (
+                            {data.status_kerja !== "Pending" && data.is_validate === true && (
                                 <button
                                     onClick={handleMarkAsPending}
                                     className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
                                 >
                                     Pending
                                 </button>
+                            )}
+
+                            {/* Tombol Validasi */}
+                            {data.is_validate === false && (
+                                <div className="justify-end items-end flex gap-2">
+                                    <button
+                                        onClick={() => handleTolak()}
+                                        className="py-2 px-4 bg-white border rounded-full text-xl text-red-500 hover:text-white hover:bg-red-500"
+                                    >
+                                        &#10006;
+                                    </button>
+                                    <button
+                                        onClick={() => handleValidate()}
+                                        className="py-2 px-4 bg-white border rounded-full text-xl text-green-500 hover:text-white hover:bg-green-500"
+                                    >
+                                        &#10004;
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal untuk selesai */}
+                        {showDone && (
+                            <Done
+                                existingData={data}
+                                id={id}
+                                onClose={handleCloseDone}
+                                onSuccess={handleSuccessMarkAsSelesai}
+                            />
+                        )}
+                    </div>
+                )}
+
+                {isLoggedIn && sessionStorage.getItem("userRole") === "Admin" && (
+                    <div className="mt-8 ease-in transition-all duration-300 flex justify-between items-center">
+                        {/* Tombol di kiri */}
+                        {data.is_validate === true && (
+                            <div>
+                                <button
+                                    onClick={handleEdit}
+                                    className="mr-4 px-4 py-2 bg-black text-white rounded hover:bg-blue-700 hover:outline-none"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={handleDelete}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Tombol di kanan */}
+                        <div className="flex gap-4">
+                            {/* Tombol Selesai */}
+                            {data.status_kerja !== "Resolved" && data.is_validate === true &&(
+                                <button
+                                    onClick={handleMarkAsCompleted}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-green-700"
+                                >
+                                    Selesai
+                                </button>
+                            )}
+
+                            {/* Tombol In Progress */}
+                            {data.status_kerja !== "In Progress" && data.is_validate === true &&(
+                                <button
+                                    onClick={handleMarkAsInProgress}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-yellow-700"
+                                >
+                                    In Progress
+                                </button>
+                            )}
+
+                            {/* Tombol Pending */}
+                            {data.status_kerja !== "Pending" && data.is_validate === true &&(
+                                <button
+                                    onClick={handleMarkAsPending}
+                                    className="px-4 py-2 bg-black text-white rounded hover:bg-red-700"
+                                >
+                                    Pending
+                                </button>
+                            )}
+
+                            {/* Tombol Validasi */}
+                            {data.is_validate === false && (
+                                <div className="justify-end items-end flex gap-2">
+                                    <button
+                                        onClick={() => handleTolak()}
+                                        className="py-2 px-4 bg-white border rounded-full text-xl text-red-500 hover:text-white hover:bg-red-500"
+                                    >
+                                        &#10006;
+                                    </button>
+                                    <button
+                                        onClick={() => handleValidate()}
+                                        className="py-2 px-4 bg-white border rounded-full text-xl text-green-500 hover:text-white hover:bg-green-500"
+                                    >
+                                        &#10004;
+                                    </button>
+                                </div>
                             )}
                         </div>
 

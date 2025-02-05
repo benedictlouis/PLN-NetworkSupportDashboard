@@ -127,8 +127,8 @@ exports.updateData = async (req, res) => {
         const userRole = userRoleRows[0].role;
 
         // Jika mencoba mengedit is_validate dan role bukan admin, tolak permintaan
-        if (is_validate !== undefined && userRole !== 'Admin') {
-            return res.status(403).json({ message: 'Only admin can edit is_validate' });
+        if (is_validate !== undefined && userRole !== 'Admin' && userRole !== 'Super Admin') {
+            return res.status(403).json({ message: 'Only admin or super admin can edit is_validate' });
         }
 
         // Ambil data lama

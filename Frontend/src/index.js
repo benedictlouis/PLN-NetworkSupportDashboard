@@ -5,11 +5,15 @@ export const navLinks = [
     },
     {
       id: "list",
-      title: "Daftar Pekerjaan",
+      title: "Pekerjaan",
+    },
+    {
+      id: "validation",
+      title: "Permintaan",
     },
     {
       id: "accountManagement",
-      title: "Account Management",
+      title: "Kelola Akun",
     },
     {
       id: "login",

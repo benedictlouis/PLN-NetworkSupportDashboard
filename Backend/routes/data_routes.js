@@ -15,6 +15,4 @@ router.post('/input', dataController.addData);
 router.put('/edit/:id', dataController.updateData);
 router.delete('/delete/:id', dataController.deleteData);
 
-
-
 module.exports = router;

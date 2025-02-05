@@ -138,6 +138,10 @@ const History = () => {
                                         <p className="text-sm font-normal text-gray-700">
                                             <span className="font-medium text-black">{item.username}</span> menambahkan pekerjaan.
                                         </p>
+                                    ) : item.column_name === "is_validate" ? (
+                                        <p className="text-sm font-normal text-gray-700">
+                                            <span className="font-medium text-black">{item.username}</span> menyetujui permintaan ini.
+                                        </p>
                                     ) : (
                                         <>
                                             <p className="text-sm font-normal text-gray-700">

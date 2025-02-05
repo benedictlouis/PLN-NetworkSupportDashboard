@@ -4,15 +4,7 @@ import { useState, useEffect } from "react";
 
 const ValidationPage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [statusFilter, setStatusFilter] = useState("");
-    const [mingguFilter, setMingguFilter] = useState("");
-    const [bulanFilter, setBulanFilter] = useState("");
-    const [tahunFilter, setTahunFilter] = useState("");
-    const [kategoriFilter, setKategoriFilter] = useState("");
-    const [newestFilter, setNewestFilter] = useState("");
-    const [latestFilter, setLatestFilter] = useState("");
     const [tasks, setTasks] = useState([]);
-    const [filteredTasks, setFilteredTasks] = useState([]);
 
     useEffect(() => {
         const loginStatus = sessionStorage.getItem("isLoggedIn");
@@ -22,64 +14,15 @@ const ValidationPage = () => {
         fetchTasks();
     }, []);
 
-    useEffect(() => {
-        handleFilterChange(); // Call the filter function every time a filter value changes
-    }, [statusFilter, mingguFilter, bulanFilter, tahunFilter, kategoriFilter, newestFilter, latestFilter]);
-
     const fetchTasks = async () => {
         try {
-            const response = await fetch("http://localhost:5433/data/all");
+            const response = await fetch("http://localhost:5433/data/unvalidate");
             const data = await response.json();
+            console.log(data);
             setTasks(data);
-            setFilteredTasks(data); // Initially display all tasks
         } catch (error) {
             console.error("Error fetching tasks:", error);
         }
-    };
-
-    const handleFilterChange = () => {
-        let filtered = tasks;
-
-        // Filter by status
-        if (statusFilter) {
-            filtered = filtered.filter((task) => task.status_kerja === statusFilter);
-        }
-
-        // Filter by minggu (week) with format "Minggu X"
-        if (mingguFilter) {
-            filtered = filtered.filter((task) => task.minggu === `Minggu ${mingguFilter}`);
-        }
-
-        // Filter by bulan (month)
-        if (bulanFilter) {
-            filtered = filtered.filter((task) => new Date(task.tanggal_awal).getMonth() + 1 === parseInt(bulanFilter));
-        }
-
-        // Filter by tahun (year)
-        if (tahunFilter) {
-            filtered = filtered.filter((task) => new Date(task.tanggal_awal).getFullYear() === parseInt(tahunFilter));
-        }
-
-        // Filter by kategori
-        if (kategoriFilter) {
-            filtered = filtered.filter((task) => task.kategori_pekerjaan === kategoriFilter);
-        }
-
-        // Sorting logic
-        if (newestFilter === "newest") {
-            filtered = filtered.sort((a, b) => a.id - b.id); // Ascending
-        } else if (newestFilter === "latest") {
-            filtered = filtered.sort((a, b) => b.id - a.id); // Descending
-        }
-
-        setFilteredTasks(filtered);
-    };
-
-    // Helper function to get the week number of a date
-    const getWeekNumber = (date) => {
-        const startDate = new Date(date.getFullYear(), 0, 1);
-        const days = Math.floor((date - startDate) / (24 * 60 * 60 * 1000));
-        return Math.ceil((days + startDate.getDay() + 1) / 7);
     };
 
     return (
@@ -97,7 +40,7 @@ const ValidationPage = () => {
                 {/* Tampilkan pesan jika tidak ada data yang cocok */}
                 {tasks.length === 0 ? (
                     <div className="text-center text-xl text-gray-600 mt-6">
-                        Data kosong.
+                        Tidak ada pekerjaan baru.
                     </div>
                 ) : (
                     <Card reports={tasks} />
