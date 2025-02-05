@@ -23,13 +23,13 @@ export default function Navbar() {
     const userRole = sessionStorage.getItem("userRole");
 
     const updatedNavLinks = isLoggedIn
-        ? navLinks
-            .map((nav) =>
-                nav.id === "login" ? { ...nav, title: "Log Out" } : nav
-            )
-            .filter((nav) => ["Admin", "Super Admin"].includes(userRole) || nav.id !== "accountManagement")
-        : navLinks.filter((nav) => nav.id !== "accountManagement");
-
+    ? navLinks
+        .map((nav) => (nav.id === "login" ? { ...nav, title: "Log Out" } : nav))
+        .filter((nav) => 
+            ["Admin", "Super Admin"].includes(userRole) || 
+            !["accountManagement", "validation"].includes(nav.id)
+        )
+    : navLinks.filter((nav) => !["accountManagement", "validation"].includes(nav.id));
 
     const handleLogout = () => {
         sessionStorage.setItem("isLoggedIn", "false");
