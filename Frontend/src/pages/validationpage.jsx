@@ -1,18 +1,25 @@
 import Navbar from "../components/navbar";
 import Card from "../components/card";
 import { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 
 const ValidationPage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
     const [tasks, setTasks] = useState([]);
 
     useEffect(() => {
-        const loginStatus = sessionStorage.getItem("isLoggedIn");
-        setIsLoggedIn(loginStatus === "true");
+        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+        setIsLoggedIn(isLoggedIn === "true");
 
-        // Fetch tasks from the API or other data source
+        if (isLoggedIn === "false") {
+            navigate('/login');
+        } else if (sessionStorage.getItem("userRole") !== "Admin" && sessionStorage.getItem("userRole") !== "Super Admin") {
+            navigate('/dashboard');
+        }
+
         fetchTasks();
-    }, []);
+    }, [navigate]);
 
     const fetchTasks = async () => {
         try {
