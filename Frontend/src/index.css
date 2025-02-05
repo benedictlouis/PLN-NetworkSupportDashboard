@@ -104,6 +104,14 @@ button:focus-visible {
   background: linear-gradient(90deg, #1C94AC 0%, #8ce8fa 100%);
 }
 
+.bg-gradient-threshold-merah{
+  background: linear-gradient(90deg, #1C94AC 0%, #EF4444 100%);
+}
+
+.bg-gradient-threshold-kuning{
+  background: linear-gradient(90deg, #1C94AC 0%, #EAB308 100%);
+}
+
 .bg-pln{
   background-color: #1C94AC;
 }

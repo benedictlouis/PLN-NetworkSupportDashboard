@@ -190,6 +190,7 @@ const Detail = () => {
     };
 
     const handleValidate = async () => {
+        const confirmDelete = window.confirm("Terima pekerjaan?");
         try {
             const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
                 method: "PUT",

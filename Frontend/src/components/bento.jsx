@@ -65,73 +65,105 @@ const Bento = () => {
             .catch(error => console.error('Error fetching jobs by status:', error));
     }, []);
 
+    const bgColor = 
+        summaryData.unfinished_jobs > 4 //treshold
+            ? "bg-gradient-threshold-merah"
+            : summaryData.unfinished_jobs === 4
+                ? "bg-gradient-threshold-kuning"
+                : "bg-pln";
+
     return (
         <div className="grid h-full w-full grid-cols-6 grid-rows-6 gap-6">
-            <div className="col-span-2 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-white py-4 px-4 shadow bg-pln">
+            {/* Card Total Pekerjaan */}
+            <div
+                className={`col-span-2 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-white py-4 px-4 shadow ${bgColor}`}
+            >
                 <div className="flex flex-row items-center gap-x-32 max-md:gap-x-16">
                     <div className="flex flex-col items-center">
-                        <h2 className="text-lg max-md:text-sm font-semibold mb-2">Total Pekerjaan</h2>
-                        <p className="text-8xl max-md:text-4xl font-bold">{summaryData.total_jobs || 0}</p>
+                        <h2 className="text-lg max-md:text-sm font-semibold mb-2">
+                            Total Pekerjaan
+                        </h2>
+                        <p className="text-8xl max-md:text-4xl font-bold">
+                            {summaryData.total_jobs || 0}
+                        </p>
                     </div>
                     <div className="flex flex-col items-center">
-                        <h2 className="text-lg max-md:text-sm font-semibold mb-2">Belum selesai</h2>
-                        <p className="text-8xl max-md:text-4xl font-bold">{summaryData.unfinished_jobs || 0}</p>
+                        <h2 className="text-lg max-md:text-sm font-semibold mb-2">
+                            Belum selesai
+                        </h2>
+                        <p className="text-8xl max-md:text-4xl font-bold">
+                            {summaryData.unfinished_jobs || 0}
+                        </p>
                     </div>
                 </div>
             </div>
+
+            {/* Card Per Kategori */}
             <div className="col-span-4 row-span-2 bg-white rounded-3xl flex flex-col justify-center items-center py-4 px-4">
-                <h2 className="text-3xl max-md:text-xl text-black font-semibold mt-12">Tugas Belum Selesai</h2>
-                <h2 className="text-xl max-md:text-sm text-gray-500 font-semibold mb-12">Per Kategori</h2>
+                <h2 className="text-3xl max-md:text-xl text-black font-semibold mt-12">
+                    Tugas Belum Selesai
+                </h2>
+                <h2 className="text-xl max-md:text-sm text-gray-500 font-semibold mb-12">
+                    Per Kategori
+                </h2>
                 <div className="grid grid-cols-5 gap-4 text-black">
-                    {['WiFi', 'LAN', 'Whitelist', 'User Access', 'WAN', 'Monitoring', 'Pendampingan', 'Pembuatan Laporan/Prosedur/SOP', 'Konfigurasi', 'Rapat'].map((category, index) => {
-                        const categoryData = sumCategoryData.find(item => item.kategori_pekerjaan === category);
-                        const totalJobs = categoryData ? categoryData.total_jobs : '-';
+                    {[
+                        "WiFi",
+                        "LAN",
+                        "Whitelist",
+                        "User Access",
+                        "WAN",
+                        "Monitoring",
+                        "Pendampingan",
+                        "Pembuatan Laporan/Prosedur/SOP",
+                        "Konfigurasi",
+                        "Rapat",
+                    ].map((category, index) => {
+                        const categoryData = sumCategoryData.find(
+                            (item) => item.kategori_pekerjaan === category
+                        );
+                        const totalJobs = categoryData ? categoryData.total_jobs : "-";
                         return (
                             <div key={index} className="text-center">
-                                <p className="text-sm max-md:text-xs font-medium mb-2">{category}</p>
-                                <p className="text-4xl max-md:text-md font-semibold mb-12">{totalJobs}</p>
+                                <p className="text-sm max-md:text-xs font-medium mb-2">
+                                    {category}
+                                </p>
+                                <p className="text-4xl max-md:text-md font-semibold mb-12">
+                                    {totalJobs}
+                                </p>
                             </div>
                         );
                     })}
                 </div>
             </div>
 
+            {/* Card Status */}
             <div className="col-span-2 row-span-1 bg-gray-100 rounded-3xl flex flex-col justify-center items-center text-black py-4 px-4 shadow">
                 <div className="flex flex-row gap-x-16 max-md:gap-x-6">
                     {["resolved", "in progress", "pending"].map((statusName) => {
-                        const status = sumStatusData.find(
-                            (item) => item.status_kerja.toLowerCase() === statusName
-                        ) || { status_kerja: statusName, total_jobs: 0 };
+                        const status =
+                            sumStatusData.find(
+                                (item) => item.status_kerja.toLowerCase() === statusName
+                            ) || { status_kerja: statusName, total_jobs: 0 };
 
-                        let bgColor;
-                        switch (status.status_kerja.toLowerCase()) {
-                            case "resolved":
-                                bgColor = "text-green-500";
-                                break;
-                            case "in progress":
-                                bgColor = "text-yellow-500";
-                                break;
-                            case "pending":
-                                bgColor = "text-red-500";
-                                break;
-                            default:
-                                bgColor = "text-gray-300";
-                        }
-                        
-                        let size;
-                        if (status.total_jobs < 100) {
-                            size = "text-8xl max-md:text-4xl" ;
-                        } else {
-                            size = "text-6xl max-md:text-xl";
-                        }
+                        const bgColorClass = {
+                            resolved: "text-green-500",
+                            "in progress": "text-yellow-500",
+                            pending: "text-red-500",
+                        }[status.status_kerja.toLowerCase()] || "text-gray-300";
+
+                        const sizeClass =
+                            status.total_jobs < 100
+                                ? "text-8xl max-md:text-4xl"
+                                : "text-6xl max-md:text-xl";
 
                         return (
-                            <div key={status.status_kerja} className="flex flex-col items-center ">
+                            <div key={status.status_kerja} className="flex flex-col items-center">
                                 <p className="mt-2 mb-2 text-lg max-md:text-xs text-center font-medium">
                                     {status.status_kerja}
                                 </p>
                                 <div
-                                    className={`flex items-center justify-center rounded-full font-bold ${size} ${bgColor}`}
+                                    className={`flex items-center justify-center rounded-full font-bold ${sizeClass} ${bgColorClass}`}
                                 >
                                     {status.total_jobs || 0}
                                 </div>
@@ -140,6 +172,8 @@ const Bento = () => {
                     })}
                 </div>
             </div>
+
+            {/* Chart Components */}
             <div className="col-span-3 row-span-2 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <StatusDistribution data={statusDistributionData} />
             </div>
@@ -158,9 +192,6 @@ const Bento = () => {
             <div className="col-span-6 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <JobsPerPic data={jobsPerPicData} />
             </div>
-            {/* <div className="col-span-5 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
-                <AverageDurations data={picPercentageData} />
-            </div> */}
         </div>
     );
 }
