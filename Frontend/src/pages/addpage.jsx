@@ -13,8 +13,6 @@ const AddPage = () => {
 
         if (isLoggedIn === "false") {
             navigate('/login');
-        } else if (sessionStorage.getItem("userRole") != "Admin"){
-            navigate('/dashboard');
         };
     }, [navigate]);
 
