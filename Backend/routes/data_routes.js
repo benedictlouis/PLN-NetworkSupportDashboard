@@ -4,6 +4,7 @@ const dataController = require('../controllers/data_controller.js');
 
 // Route untuk login
 router.get('/all', dataController.getAllData);
+router.get('/unvalidate', dataController.getUnvalidatedData);
 router.get('/durations', dataController.getDurations);
 router.get('/summary', dataController.getJobSummary);
 router.get('/sumcategory', dataController.getUnfinishedJobsByCategory);

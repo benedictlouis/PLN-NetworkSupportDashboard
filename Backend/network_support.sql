@@ -292,6 +292,8 @@ FOR EACH ROW
 EXECUTE FUNCTION log_history();
 
 
+-- tambah is_validate
+ALTER TABLE network_support ADD COLUMN is_validate BOOLEAN DEFAULT FALSE;
 
 -- Test Data input network_support
 /* Valid Input test*/

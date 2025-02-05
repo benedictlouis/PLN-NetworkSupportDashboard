@@ -3,7 +3,7 @@ const { pool } = require('../config/db.config.js');
 // Get all data
 exports.getAllData = async (req, res) => {
     try {
-        const { rows } = await pool.query('SELECT * FROM network_support ORDER BY id desc');
+        const { rows } = await pool.query('SELECT * FROM network_support WHERE is_validate = true ORDER BY id DESC');
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
@@ -38,22 +38,33 @@ exports.addData = async (req, res) => {
     }
 
     try {
+        // Ambil role user berdasarkan edited_by
+        const userRoleQuery = 'SELECT role FROM users WHERE id = $1';
+        const { rows: userRoleRows } = await pool.query(userRoleQuery, [edited_by]);
+
+        if (!userRoleRows.length) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const userRole = userRoleRows[0].role;
+        const is_validate = userRole === 'admin'; // Jika role adalah admin, is_validate = true
+
         // Insert new data
         const insertQuery = `
             INSERT INTO network_support (
                 minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
                 nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-                detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
+                detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate
             ) VALUES (
                 $1, $2, $3, $4, $5, $6,
                 $7, $8, $9, $10,
-                $11, $12, $13, $14, $15, $16
+                $11, $12, $13, $14, $15, $16, $17
             ) RETURNING id
         `;
         const values = [
             minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
             nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
+            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate
         ];
 
         const { rows } = await pool.query(insertQuery, values);
@@ -96,7 +107,7 @@ exports.updateData = async (req, res) => {
     const {
         minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
         nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
+        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate
     } = req.body;
 
     // Validasi input awal
@@ -105,6 +116,21 @@ exports.updateData = async (req, res) => {
     }
 
     try {
+        // Ambil role user berdasarkan edited_by
+        const userRoleQuery = 'SELECT role FROM users WHERE id = $1';
+        const { rows: userRoleRows } = await pool.query(userRoleQuery, [edited_by]);
+
+        if (!userRoleRows.length) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const userRole = userRoleRows[0].role;
+
+        // Jika mencoba mengedit is_validate dan role bukan admin, tolak permintaan
+        if (is_validate !== undefined && userRole !== 'Admin') {
+            return res.status(403).json({ message: 'Only admin can edit is_validate' });
+        }
+
         // Ambil data lama
         const oldDataQuery = 'SELECT * FROM network_support WHERE id = $1';
         const { rows: oldDataRows } = await pool.query(oldDataQuery, [id]);
@@ -132,7 +158,7 @@ exports.updateData = async (req, res) => {
         Object.entries({
             minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
             nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
+            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, is_validate
         }).forEach(([key, value]) => {
             if (value !== undefined && value !== oldData[key]) { // Pastikan nilai baru berbeda
                 fieldsToUpdate.push(`${key} = $${fieldsToUpdate.length + 1}`);
@@ -161,7 +187,6 @@ exports.updateData = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
-
 
 
 // Delete data by ID
@@ -281,5 +306,14 @@ exports.getHistoryByTaskId = async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+exports.getUnvalidatedData = async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT * FROM network_support WHERE is_validate = false ORDER BY id DESC');
+        res.status(200).json(rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
