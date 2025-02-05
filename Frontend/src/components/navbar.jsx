@@ -27,7 +27,7 @@ export default function Navbar() {
             .map((nav) =>
                 nav.id === "login" ? { ...nav, title: "Log Out" } : nav
             )
-            .filter((nav) => userRole === "Admin" || nav.id !== "accountManagement")
+            .filter((nav) => ["Admin", "Super Admin"].includes(userRole) || nav.id !== "accountManagement")
         : navLinks.filter((nav) => nav.id !== "accountManagement");
 
 

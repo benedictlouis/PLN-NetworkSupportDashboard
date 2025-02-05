@@ -24,7 +24,7 @@ const AccountManagement = () => {
     };
 
     useEffect(() => {
-        if (userRole !== "Admin") {
+        if (userRole !== "Admin" && userRole !== "Super Admin") {
             setError("Anda tidak memiliki izin untuk melihat akun.");
             setLoading(false);
             return;

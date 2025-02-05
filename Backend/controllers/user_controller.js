@@ -11,6 +11,7 @@ exports.login = async (req, res) => {
             req.session.userId = user.id;
             req.session.username = user.username;
             req.session.role = user.role;
+            console.log("Session after login:", req.session);
 
             res.status(200).json({ 
                 message: 'Login successful',
@@ -30,10 +31,10 @@ exports.getAllAccounts = async (req, res) => {
     console.log("Request received to get all accounts");
     console.log("Session Data:", req.session);
 
-    if (!req.session.role || req.session.role !== "Admin") {
-        return res.status(403).json({ message: "Unauthorized: Only Admin can view all accounts" });
+    if (!req.session.role || (req.session.role !== "Admin" && req.session.role !== "Super Admin")) {
+        return res.status(403).json({ message: "Unauthorized: Only Admin or Super Admin can view all accounts" });
     }
-
+        
     try {
         const query = `SELECT id, username, role FROM users ORDER BY id`;
         const { rows } = await pool.query(query);
@@ -57,12 +58,12 @@ exports.createUserAccount = async (req, res) => {
         return res.status(400).json({ message: "Username, password, and role are required" });
     }
 
-    if (role !== "Admin" && role !== "Support") {
-        return res.status(400).json({ message: "Invalid role. Allowed roles: Admin, Support" });
+    if (!req.session.role || !["Admin", "Super Admin"].includes(req.session.role)) {
+        return res.status(403).json({ message: "Unauthorized: Only Admin or Super Admin can create accounts" });
     }
 
-    if (!req.session.role || req.session.role !== "Admin") {
-        return res.status(403).json({ message: "Unauthorized: Only Admin can create accounts" });
+    if (!["Admin", "Support"].includes(role)) {
+        return res.status(400).json({ message: "Invalid role. Allowed roles: Admin, Support" });
     }
 
     try {
@@ -100,8 +101,8 @@ exports.updateUserAccount = async (req, res) => {
         return res.status(400).json({ message: "At least one field (username, password, or role) must be provided for update" });
     }
 
-    if (!req.session.role || req.session.role !== "Admin") {
-        return res.status(403).json({ message: "Unauthorized: Only Admin can update accounts" });
+    if (!req.session.role || !["Admin", "Super Admin"].includes(req.session.role)) {
+        return res.status(403).json({ message: "Unauthorized: Only Admin or Super Admin can update accounts" });
     }
 
     try {
@@ -115,8 +116,12 @@ exports.updateUserAccount = async (req, res) => {
 
         const userToUpdate = existingUser[0];
 
-        if (userToUpdate.role === "Admin" && targetUsername !== req.session.username) {
+        if (req.session.role === "Admin" && userToUpdate.role === "Admin" && targetUsername !== req.session.username) {
             return res.status(403).json({ message: "Unauthorized: Admins can only edit their own account or Support accounts" });
+        }
+
+        if (req.session.role === "Super Admin" && userToUpdate.role === "Super Admin") {
+            return res.status(403).json({ message: "Unauthorized: Super Admin cannot edit another Super Admin" });
         }
 
         let updateFields = [];
@@ -166,8 +171,8 @@ exports.deleteUserAccount = async (req, res) => {
         return res.status(400).json({ message: "Username is required" });
     }
 
-    if (!req.session.role || req.session.role !== "Admin") {
-        return res.status(403).json({ message: "Unauthorized: Only Admin can delete accounts" });
+    if (!req.session.role || !["Admin", "Super Admin"].includes(req.session.role)) {
+        return res.status(403).json({ message: "Unauthorized: Only Admin or Super Admin can delete accounts" });
     }
 
     try {
@@ -183,8 +188,12 @@ exports.deleteUserAccount = async (req, res) => {
 
         const targetUser = userToDelete[0];
 
-        if (targetUser.role === "Admin" && targetUser.username !== req.session.username) {
+        if (req.session.role === "Admin" && targetUser.role === "Admin" && targetUser.username !== req.session.username) {
             return res.status(403).json({ message: "Unauthorized: Admins can only delete their own account or Support accounts" });
+        }
+
+        if (req.session.role === "Super Admin" && targetUser.role === "Super Admin") {
+            return res.status(403).json({ message: "Unauthorized: Super Admin cannot delete another Super Admin" });
         }
 
         const { rows } = await pool.query(deleteUserQuery, [username]);

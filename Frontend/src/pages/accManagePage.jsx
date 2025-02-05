@@ -15,9 +15,9 @@ const AccountManagePage = () => {
 
         if (isLoggedIn === "false") {
             navigate('/login');
-        } else if (sessionStorage.getItem("userRole") != "Admin"){
+        } else if (sessionStorage.getItem("userRole") !== "Admin" && sessionStorage.getItem("userRole") !== "Super Admin") {
             navigate('/dashboard');
-        };
+        }
     }, [navigate]);
     
 
