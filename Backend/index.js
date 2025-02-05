@@ -32,6 +32,7 @@ app.use("/data", dataRoutes);
 app.use("/chart", chartRoutes);
 
 app.get("/debug-session", (req, res) => {
+    console.log("Current session:", req.session);
     res.json(req.session);
 });
 
