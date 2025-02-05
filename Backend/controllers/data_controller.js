@@ -47,7 +47,9 @@ exports.addData = async (req, res) => {
         }
 
         const userRole = userRoleRows[0].role;
-        const is_validate = userRole === 'admin'; // Jika role adalah admin, is_validate = true
+
+        // Jika role adalah admin atau super admin, set is_validate = true
+        const is_validate = userRole === 'Admin' || userRole === 'Super Admin';
 
         // Insert new data
         const insertQuery = `
