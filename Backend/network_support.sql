@@ -295,37 +295,6 @@ EXECUTE FUNCTION log_history();
 -- tambah is_validate
 ALTER TABLE network_support ADD COLUMN is_validate BOOLEAN DEFAULT FALSE;
 
--- Test Data input network_support
-/* Valid Input test*/
-INSERT INTO network_support (
-    minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja, nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan, detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
-) VALUES (
-    'Minggu 2', 'Desember', 2024, '2024-12-10', '11:00', 'Resolved', 'Nurhalim / Desktop support', NULL, 'GU.12 Kanan', 'WiFi', 'AP-GU-Lt.12-Kanan-2 terpantau error di indikatornya. Sudah dicek kabelnya masih ok. Restart port, juga masih sama.', ARRAY['Tyo', 'Fano']::pic_enum[], 'Ganti AP (ex. AP-G2-Lt.4-RR.STI)', '2024-12-10', '14:00'
-);
-
-/* Not Valid Input test*/
-INSERT INTO network_support (
-    minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja, nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan, detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai
-) VALUES (
-    'Minggu 2', 'Desember', 2024, '2024-12-11', '11:00', 'In Progress', 'Edy', NULL, 'Trapes Lt 1', 'LAN', 'Cek Link kabel LAN untuk EO di Gd 2 Lt 1, penambahan VLAN untuk FOH (Operator)', ARRAY['Tyo']::pic_enum[], NULL, NULL, NULL
-);
-
-UPDATE network_support
-SET
-    status_kerja = 'Resolved',
-WHERE id = 2;
-
-/* Update Valid Input test*/
-UPDATE network_support
-SET
-    status_kerja = 'Resolved',
-    solusi_keterangan = 'LAN link diperbaiki dan VLAN berhasil ditambahkan',
-    tanggal_selesai = '2024-12-11',
-    jam_selesai = '13:00'
-WHERE id = 2;
-
-
-/* Test data users */
--- Masukkan satu akun untuk login
-INSERT INTO users (username, password) 
-VALUES ('admin', 'admin123');
+-- tambah new role
+ALTER TYPE role_enum ADD VALUE 'Super Admin';
+insert into users (username, password, role) values ('admin', 'admin', 'Super Admin');
