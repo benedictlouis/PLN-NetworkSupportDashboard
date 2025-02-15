@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { pool } = require("./config/db.config.js");
 const cors = require("cors");
+const csurf = require('csurf');
 const session = require("express-session"); 
 require("dotenv").config();
 
@@ -24,8 +25,9 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }
+    cookie: { httpOnly: true, secure: false, maxAge: 3600000 } // 1 jam
 }));
+
 
 app.use("/user", userRoutes);
 app.use("/data", dataRoutes);
@@ -35,7 +37,6 @@ app.get("/debug-session", (req, res) => {
     console.log("Current session:", req.session);
     res.json(req.session);
 });
-
 
 pool.connect(() => {    
     console.log("Connected to database");

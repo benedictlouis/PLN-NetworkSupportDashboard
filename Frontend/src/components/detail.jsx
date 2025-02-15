@@ -47,6 +47,19 @@ const Detail = () => {
         return formatted.trim();
     };
 
+    const slaMapping = {
+        1: "SLA 1 (30 menit)",
+        2: "SLA 2 (60 menit)",
+        3: "SLA 3 (90 menit)",
+        4: "SLA 4 (120 menit)",
+        5: "SLA 5 (240 menit)",
+        6: "SLA 6 (480 menit / 1 hari kerja)",
+        7: "SLA 7 (1440 menit / 2 hari kerja)",
+        8: "SLA 8 (2880 menit / 4 hari kerja)",
+    };
+
+    
+
     useEffect(() => {
         if (data) {
             setExistingData(data);
@@ -385,6 +398,10 @@ const Detail = () => {
                     <div className="col-span-1 pb-4">
                         <p className="text-sm text-gray-500">Jam Selesai</p>
                         <p className="text-gray-700">{data.jam_selesai ? formatTime(data.jam_selesai) : "-"}</p>
+                    </div>
+                    <div className="col-span-1 pb-4">
+                        <p className="text-sm text-gray-500">SLA</p>
+                        <p className="text-gray-700">{slaMapping[data.sla_id] || "-"}</p>
                     </div>
                     <div className="col-span-1 pb-4">
                         <p className="text-sm text-gray-500">Solusi</p>

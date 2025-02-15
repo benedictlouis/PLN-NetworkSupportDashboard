@@ -18,6 +18,7 @@ const Form = () => {
         jam: "",
         pic: [],
         edited_by: "",
+        sla_id: "", 
     });
 
     const [errors, setErrors] = useState({});
@@ -86,6 +87,10 @@ const Form = () => {
             newErrors.jam = "Wajib diisi.";
         }
 
+        if (!formData.sla_id) {
+            newErrors.sla_id = "Wajib diisi.";
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -130,6 +135,7 @@ const Form = () => {
                 tanggal_selesai: null,
                 jam_selesai: null,
                 edited_by: userId,
+                sla_id: formData.sla_id || null,
             };
 
             console.log(formDataToSubmit);
@@ -416,6 +422,35 @@ const Form = () => {
                         <p className="text-red-500 text-xs italic">{errors.jam}</p>
                     )}
                 </div>
+            </div>
+
+            {/* SLA */}
+            <div className="mb-6">
+                <label
+                    className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+                    htmlFor="sla"
+                >
+                    SLA 
+                </label>
+                <select
+                    className="block w-full bg-white text-gray-700 border py-3 px-4 rounded"
+                    id="sla_id"
+                    value={formData.sla_id || ""} 
+                    onChange={handleChange}
+                >
+                    <option value="">Pilih SLA</option>
+                    <option value="1">SLA 1 - Respon dalam 0-30 menit</option>
+                    <option value="2">SLA 2 - Respon dalam 0-60 menit</option>
+                    <option value="3">SLA 3 - Respon dalam 0-90 menit</option>
+                    <option value="4">SLA 4 - Respon dalam 0-120 menit</option>
+                    <option value="5">SLA 5 - Respon dalam 0-240 menit</option>
+                    <option value="6">SLA 6 - Respon dalam 0-480 menit (1 hari kerja)</option>
+                    <option value="7">SLA 7 - Respon dalam 0-1440 menit (2 hari kerja)</option>
+                    <option value="8">SLA 8 - Respon dalam 0-2880 menit (4 hari kerja)</option>
+                </select>
+                {errors.sla_id && ( 
+                    <p className="text-red-500 text-xs italic">{errors.sla_id}</p>
+                )}
             </div>
 
             {/* PIC */}

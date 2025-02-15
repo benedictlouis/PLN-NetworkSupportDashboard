@@ -3,7 +3,7 @@ const { pool } = require('../config/db.config.js');
 // Get all data
 exports.getAllData = async (req, res) => {
     try {
-        const { rows } = await pool.query('SELECT * FROM network_support WHERE is_validate = true ORDER BY id DESC');
+        const { rows } = await pool.query('SELECT * FROM network_support');
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
@@ -30,11 +30,17 @@ exports.addData = async (req, res) => {
     const {
         minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
         nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by
+        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, sla_id
     } = req.body;
 
+    // Validasi edited_by
     if (!edited_by) {
         return res.status(400).json({ message: 'Field edited_by is required' });
+    }
+
+    // Validasi sla_id (opsional, tergantung kebutuhan)
+    if (!sla_id) {
+        return res.status(400).json({ message: 'Field sla_id is required' });
     }
 
     try {
@@ -51,22 +57,22 @@ exports.addData = async (req, res) => {
         // Jika role adalah admin atau super admin, set is_validate = true
         const is_validate = userRole === 'Admin' || userRole === 'Super Admin';
 
-        // Insert new data
+        // Insert new data dengan sla_id
         const insertQuery = `
             INSERT INTO network_support (
                 minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
                 nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-                detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate
+                detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate, sla_id
             ) VALUES (
                 $1, $2, $3, $4, $5, $6,
                 $7, $8, $9, $10,
-                $11, $12, $13, $14, $15, $16, $17
+                $11, $12, $13, $14, $15, $16, $17, $18
             ) RETURNING id
         `;
         const values = [
             minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
             nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate
+            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate, sla_id
         ];
 
         const { rows } = await pool.query(insertQuery, values);
@@ -91,7 +97,7 @@ exports.addData = async (req, res) => {
                 INSERT INTO history (changes_id, column_name, old_value, new_value, username)
                 VALUES ($1, 'created', NULL, $2, $3)
             `;
-            const historyMessage = `${username} telah membuat pekerjaan baru`;
+            const historyMessage = `${username} telah membuat pekerjaan baru dengan SLA ID ${sla_id}`;
             await pool.query(historyQuery, [newId, historyMessage, username]);
         }
 
@@ -109,7 +115,8 @@ exports.updateData = async (req, res) => {
     const {
         minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
         nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, edited_by, is_validate
+        detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai,
+        jam_selesai, sla_id, edited_by, is_validate
     } = req.body;
 
     // Validasi input awal
@@ -160,7 +167,8 @@ exports.updateData = async (req, res) => {
         Object.entries({
             minggu, bulan, tahun, tanggal_awal, jam_awal, status_kerja,
             nama_pelapor_telepon, divisi, lokasi, kategori_pekerjaan,
-            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, jam_selesai, is_validate
+            detail_pekerjaan, pic, solusi_keterangan, tanggal_selesai, 
+            jam_selesai, sla_id, is_validate
         }).forEach(([key, value]) => {
             if (value !== undefined && value !== oldData[key]) { // Pastikan nilai baru berbeda
                 fieldsToUpdate.push(`${key} = $${fieldsToUpdate.length + 1}`);
@@ -179,7 +187,6 @@ exports.updateData = async (req, res) => {
             // Eksekusi query update
             await pool.query(query, values);
 
-            // Tidak perlu menyimpan history secara manual jika sudah menggunakan trigger
             res.status(200).json({ message: 'Data updated successfully' });
         } else {
             res.status(400).json({ message: 'No valid fields to update' });
@@ -189,6 +196,7 @@ exports.updateData = async (req, res) => {
         res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 };
+
 
 
 // Delete data by ID
