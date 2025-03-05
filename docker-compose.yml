@@ -4,7 +4,7 @@ services:
   backend:
     build: ./Backend
     ports:
-      - "5433:5433"
+      - "5433:5433"  
     environment:
       - TZ=Asia/Jakarta
     env_file:
@@ -14,13 +14,13 @@ services:
     networks:
       - app-network
     volumes:
-      - ./Backend:/app  
-      - /app/node_modules  
+      - ./Backend:/app
+      - /app/node_modules
 
   frontend:
     build: ./Frontend
     ports:
-      - "5173:5173"
+      - "5173:5173" 
     depends_on:
       - backend
     environment:
@@ -28,20 +28,21 @@ services:
     networks:
       - app-network
     volumes:
-      - ./Frontend:/app 
-      - /app/node_modules  
+      - ./Frontend:/app
+      - /app/node_modules
 
   db:
     image: postgres:16
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ""
+      POSTGRES_PASSWORD: ""  
       POSTGRES_DB: networksupport
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_HOST_AUTH_METHOD: trust 
       TZ: Asia/Jakarta
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./Backend/network_support.sql:/docker-entrypoint-initdb.d/network_support.sql 
     networks:
       - app-network
 
