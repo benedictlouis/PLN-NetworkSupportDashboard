@@ -35,6 +35,22 @@ cd ../backend
 npm install
 npm run start
 ```
+## Run the Project with Docker
+Follow these steps to set up and run the project with docker.
+
+## Prerequisites
+Ensure Docker and Docker Compose are installed on your machine.
+
+### 1. Clone the Repository
+```sh
+git clone <repository-url>
+cd <repository-folder>
+```
+
+### 2. Build and Run the Project with Docker Compose
+```sh
+docker-compose up --build
+```
 
 ## Notes
 - If the display font does not appear as expected, try installing the **Poppins** font on your computer.
@@ -46,4 +62,3 @@ npm run start
 Now your website should be up and running!
 
 You can check how the website should look in the provided PDF slides within the repository. If you experience any issues or have any questions, feel free to contact us.
-
