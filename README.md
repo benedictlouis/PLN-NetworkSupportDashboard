@@ -47,7 +47,19 @@ git clone <repository-url>
 cd <repository-folder>
 ```
 
-### 2. Build and Run the Project with Docker Compose
+### 2. Update Environment Configuration
+Edit the .env file to ensure that the PostgreSQL host is set correctly for Docker.  
+
+Find the line:
+```sh
+PGHOST='localhost'
+```
+Change it to 
+```sh
+PGHOST='db'
+```
+
+### 3. Build and Run the Project with Docker Compose
 ```sh
 docker-compose up --build
 ```
