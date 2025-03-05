@@ -3,7 +3,7 @@ const { pool } = require('../config/db.config.js');
 // Get all data
 exports.getAllData = async (req, res) => {
     try {
-        const { rows } = await pool.query('SELECT * FROM network_support');
+        const { rows } = await pool.query('SELECT * FROM network_support WHERE is_validate = true ORDER BY id DESC');
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
@@ -128,6 +128,8 @@ exports.updateData = async (req, res) => {
         // Ambil role user berdasarkan edited_by
         const userRoleQuery = 'SELECT role FROM users WHERE id = $1';
         const { rows: userRoleRows } = await pool.query(userRoleQuery, [edited_by]);
+
+        console.log("User role found:", userRoleRows);
 
         if (!userRoleRows.length) {
             return res.status(404).json({ message: 'User not found' });
@@ -325,5 +327,57 @@ exports.getUnvalidatedData = async (req, res) => {
         res.status(200).json(rows);
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+// 4️⃣ Rata-rata Durasi Pekerjaan per PIC (Hanya yang Divalidasi)
+exports.getAverageDurationPerPIC = async (req, res) => {
+    try {
+        const query = `
+            SELECT unnest(pic) AS individual_pic, 
+                   AVG(EXTRACT(EPOCH FROM ((tanggal_selesai + jam_selesai) - (tanggal_awal + jam_awal))) / 60) AS avg_duration_minutes
+            FROM network_support
+            WHERE tanggal_selesai IS NOT NULL 
+              AND jam_selesai IS NOT NULL
+              AND is_validate = TRUE
+            GROUP BY individual_pic
+            ORDER BY avg_duration_minutes DESC;
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+  
+  // 6️⃣ Statistik Performa PIC (Total Pekerjaan, Rata-rata Durasi, Kepatuhan SLA)
+exports.getPICPerformance = async (req, res) => {
+    try {
+        const query = `
+            SELECT unnest(n.pic) AS individual_pic, 
+                   COUNT(*) AS total_jobs,
+                   AVG(EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) AS avg_duration_minutes,
+                   COUNT(CASE 
+                            WHEN (EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) <= s.sla_duration 
+                            THEN 1 
+                         END) AS on_time_jobs,
+                   COUNT(CASE 
+                            WHEN (EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) > s.sla_duration 
+                            THEN 1 
+                         END) AS late_jobs
+            FROM network_support n
+            JOIN sla s ON n.sla_id = s.id
+            WHERE n.tanggal_selesai IS NOT NULL 
+              AND n.jam_selesai IS NOT NULL
+              AND is_validate = TRUE
+            GROUP BY individual_pic
+            ORDER BY total_jobs DESC;
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };

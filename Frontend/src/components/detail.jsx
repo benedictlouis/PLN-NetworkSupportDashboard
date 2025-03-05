@@ -11,13 +11,13 @@ const Detail = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [duration, setDuration] = useState("");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
     const [toasts, setToasts] = useState([]);
     const [showDone, setShowDone] = useState(false); // State untuk form
     const [existingData, setExistingData] = useState({});
-
-    const userId = sessionStorage.getItem("userId");
+    
+    const [userId, setUserId] = useState(null);
+    const [userRole, setUserRole] = useState(null);
 
     // console.log(sessionStorage.getItem("userId"));
     // console.log(sessionStorage.getItem("username"));
@@ -67,15 +67,39 @@ const Detail = () => {
     }, [data]);
 
     useEffect(() => {
-        const loginStatus = sessionStorage.getItem("isLoggedIn");
-        setIsLoggedIn(loginStatus === "true");
+        fetchUserData();
+        fetchData();
+    }, []);
 
+
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user data");
+                }
+    
+                const userData = await response.json();
+               /* console.log("User Role:", userData.userRole); */
+                setUserId(userData.userId);
+                setUserRole(userData.userRole);
+            } catch (error) {
+                console.error("Error fetching user status:", error);
+            }
+        };
+    
         const fetchData = async () => {
             try {
                 const response = await axios.get(`http://localhost:5433/data/${id}`);
                 const fetchedData = response.data;
                 setData(fetchedData);
-                setExistingData(fetchedData);
                 setLoading(false);
 
                 const durationsResponse = await axios.get(`http://localhost:5433/data/durations`);
@@ -91,8 +115,6 @@ const Detail = () => {
             }
         };
 
-        fetchData();
-    }, [id, data]);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -113,7 +135,9 @@ const Detail = () => {
         const confirmDelete = window.confirm("Hapus pekerjaan?");
         if (confirmDelete) {
             axios
-                .delete(`http://localhost:5433/data/delete/${id}`)
+                .delete(`http://localhost:5433/data/delete/${id}`, {
+                    withCredentials: true 
+                })
                 .then((response) => {
                     addToast('success', 'Pekerjaan dihapus');
                     setTimeout(() => window.location.href = `/list`, 2000);
@@ -129,7 +153,9 @@ const Detail = () => {
         const confirmDelete = window.confirm("Tolak pekerjaan?");
         if (confirmDelete) {
             axios
-                .delete(`http://localhost:5433/data/delete/${id}`)
+                .delete(`http://localhost:5433/data/delete/${id}`, {
+                    withCredentials: true 
+                })
                 .then((response) => {
                     addToast('success', 'Pekerjaan ditolak');
                     setTimeout(() => window.location.href = `/list`, 2000);
@@ -153,6 +179,7 @@ const Detail = () => {
         try {
             const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
                 method: "PUT",
+                credentials: "include", 
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     status_kerja: "In Progress",
@@ -162,52 +189,66 @@ const Detail = () => {
                     edited_by: userId,
                 }),
             });
-
+    
             if (!response.ok) {
                 throw new Error("Failed to update status to In Progress");
             }
-
-            const updatedData = await response.json();
-            setData(updatedData);
+    
+            await response.json();
             addToast("success", "Status pekerjaan berhasil diubah");
+    
+            // Panggil fetchData untuk mendapatkan data terbaru
+            fetchData();
         } catch (error) {
+            console.error(error);
             addToast("error", "Gagal mengubah status pekerjaan");
         }
     };
-
+    
     const handleMarkAsPending = async () => {
         try {
             const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                credentials: "include", 
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     status_kerja: "Pending",
-                    solusi_keterangan: null, // Menghapus data solusi
-                    tanggal_selesai: null, // Menghapus tanggal selesai
-                    jam_selesai: null, // Menghapus jam selesai
+                    solusi_keterangan: null,
+                    tanggal_selesai: null,
+                    jam_selesai: null,
                     edited_by: userId,
                 }),
             });
-
+    
             if (!response.ok) {
                 throw new Error("Failed to update status to Pending");
             }
-
-            const data = await response.json();
+    
+            await response.json();
             addToast("success", "Status pekerjaan berhasil diubah");
+    
+            // Panggil fetchData untuk mendapatkan data terbaru
+            fetchData();
         } catch (error) {
+            console.error(error);
             addToast("error", "Gagal mengubah status pekerjaan");
         }
     };
+    
+    
 
     const handleValidate = async () => {
-        const confirmDelete = window.confirm("Terima pekerjaan?");
+        const confirmValidate = window.confirm("Terima pekerjaan?");
+        if (!confirmValidate) return;
+    
+        console.log("Mengirim request dengan is_validate: true");
+    
         try {
             const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
                 method: "PUT",
+                credentials: "include", 
                 headers: {
+                    
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -215,18 +256,25 @@ const Detail = () => {
                     is_validate: true,
                 }),
             });
-
-            if (!response.ok) {
-                throw new Error("Failed to update status to Pending");
-            }
-
+    
             const data = await response.json();
+            console.log("Response:", data);
+    
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to update status");
+            }
+    
             addToast("success", "Pekerjaan diterima");
+
+            setTimeout(() => {
+                navigate("/validation");
+            }, 1000);
         } catch (error) {
+            console.error("Error:", error);
             addToast("error", "Gagal menerima pekerjaan");
         }
     };
-
+    
     // Format tanggal menjadi "12 Desember 2024"
     const formatDate = (date) => {
         const options = { year: "numeric", month: "long", day: "numeric" };
@@ -419,8 +467,8 @@ const Detail = () => {
                         <p className="text-gray-700">{data?.pic ? data.pic.replace(/{|}/g, "").replace(/,/g, ", ") : "Tidak ada PIC"}</p>
                     </div>
                 </div>
-
-                {isLoggedIn && sessionStorage.getItem("userRole") === "Super Admin" && (
+                
+                {userRole === "Super Admin" && (
                     <div className="mt-8 ease-in transition-all duration-300 flex justify-between items-center">
                         {/* Tombol di kiri */}
                         {data.is_validate === true && (
@@ -503,7 +551,7 @@ const Detail = () => {
                     </div>
                 )}
 
-                {isLoggedIn && sessionStorage.getItem("userRole") === "Admin" && (
+                {userRole === "Admin" && (
                     <div className="mt-8 ease-in transition-all duration-300 flex justify-between items-center">
                         {/* Tombol di kiri */}
                         {data.is_validate === true && (
@@ -586,7 +634,7 @@ const Detail = () => {
                     </div>
                 )}
 
-                {isLoggedIn && sessionStorage.getItem("userRole") === "Support" && (
+                {userRole === "Support" && (
                     <div className="mt-8 ease-in transition-all duration-300 flex justify-end items-center">
                         {/* Tombol di kanan */}
                         <div className="flex gap-4">

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const dataController = require('../controllers/data_controller.js');
+const authMiddleware = require('../middleware/auth_middleware.js');
+
 
 // Route untuk login
 router.get('/all', dataController.getAllData);
@@ -12,7 +14,9 @@ router.get('/sumstatus', dataController.getJobsByStatus);
 router.get('/history/:id', dataController.getHistoryByTaskId);
 router.get('/:id', dataController.getDataById);
 router.post('/input', dataController.addData);
-router.put('/edit/:id', dataController.updateData);
-router.delete('/delete/:id', dataController.deleteData);
+router.put('/edit/:id', authMiddleware.requireRole(['Admin', 'Super Admin']), dataController.updateData);
+router.delete('/delete/:id', authMiddleware.requireRole(['Admin', 'Super Admin']), dataController.deleteData);
+router.get('/avg-duration-per-pic', dataController.getAverageDurationPerPIC);
+router.get('/pic-performance', dataController.getPICPerformance);
 
 module.exports = router;

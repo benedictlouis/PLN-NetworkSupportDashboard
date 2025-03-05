@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -9,16 +9,43 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import MenuItem from '@mui/material/MenuItem';
 import ToastContainer from './toastcontainer';
 
+
+
 const Register = () => {
     const [username, setUsername] = useState("");
     const [password, setPass] = useState("");
     const [confirmPass, setConfirmPass] = useState("");
     const [role, setRole] = useState("Admin");
+    const [userRole, setUserRole] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [toasts, setToasts] = useState([]);
 
-    const userRole = sessionStorage.getItem("userRole");
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user data");
+                }
+    
+                const userData = await response.json();
+    
+                setUserRole(userData.userId);
+            } catch (error) {
+                console.error("Error fetching user status:", error);
+            }
+        };
+    
+        fetchUserData();
+    }, []);
 
     const addToast = (type, message) => {
         const id = new Date().getTime();

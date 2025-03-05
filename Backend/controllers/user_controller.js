@@ -3,6 +3,7 @@ const { pool } = require('../config/db.config.js');
 exports.login = async (req, res) => {
     const { username, password } = req.body;
     const query = `SELECT * FROM users WHERE username = $1 AND password = $2`;
+
     try {
         const { rows } = await pool.query(query, [username, password]);
         if (rows.length) {
@@ -11,6 +12,7 @@ exports.login = async (req, res) => {
             req.session.userId = user.id;
             req.session.username = user.username;
             req.session.role = user.role;
+
             console.log("Session after login:", req.session);
 
             res.status(200).json({ 
@@ -27,9 +29,37 @@ exports.login = async (req, res) => {
     }
 };
 
+
+
+exports.logout = async (req, res) => {
+    try {
+        if (!req.session.userId) {
+            return res.status(401).json({ message: "User not logged in" });
+        }
+
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Error destroying session:", err);
+                return res.status(500).json({ message: "Failed to log out" });
+            }
+            res.clearCookie("connect.sid"); 
+            return res.status(200).json({ message: "Logout successful" });
+        });
+    } catch (error) {
+        console.error("Logout error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 exports.getAllAccounts = async (req, res) => {
     console.log("Request received to get all accounts");
-    console.log("Session Data:", req.session);
+    console.log("Session Data:", req.session); // Debug session data
+
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    console.log("User Role:", req.session.role); // Cek apakah role ada di session
 
     if (!req.session.role || (req.session.role !== "Admin" && req.session.role !== "Super Admin")) {
         return res.status(403).json({ message: "Unauthorized: Only Admin or Super Admin can view all accounts" });

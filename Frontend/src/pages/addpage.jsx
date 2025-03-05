@@ -8,12 +8,31 @@ const AddPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
-        setIsLoggedIn(isLoggedIn === "true");
+        const checkAuth = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    credentials: "include", 
+                });
 
-        if (isLoggedIn === "false") {
-            navigate('/login');
+                if (response.status === 401) {
+                    navigate("/login");
+                    return;
+                }
+
+                const user = await response.json();
+                if (!["Support", "Admin", "Super Admin"].includes(user.userRole)) {
+                    navigate("/dashboard");
+                    return;
+                }
+
+                setIsLoggedIn(true);
+            } catch (error) {
+                console.error("Error checking authentication:", error);
+                navigate("/login");
+            }
         };
+
+        checkAuth();
     }, [navigate]);
 
     return (

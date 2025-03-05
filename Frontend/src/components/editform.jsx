@@ -28,6 +28,9 @@ const EditForm = () => {
     const [errors, setErrors] = useState({});
     const [toasts, setToasts] = useState([]);
 
+    const [userId, setUserId] = useState(null);
+    const [userRole, setUserRole] = useState(null);
+
     const addToast = (type, message) => {
         const id = new Date().getTime();
         setToasts([...toasts, { id, type, message }]);
@@ -71,28 +74,48 @@ const EditForm = () => {
     };
 
     useEffect(() => {
-        const loginStatus = sessionStorage.getItem("isLoggedIn");
-        setIsLoggedIn(loginStatus === "true");
-
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user data");
+                }
+    
+                const userData = await response.json();
+                setIsLoggedIn(true);
+                setUserId(userData.userId);
+                setUserRole(userData.userRole);
+            } catch (error) {
+                console.error("Error fetching user status:", error);
+                setIsLoggedIn(false);
+            }
+        };
+    
         const fetchData = async () => {
             try {
-                const response = await fetch(`http://localhost:5433/data/${id}`); // Mengambil data
+                const response = await fetch(`http://localhost:5433/data/${id}`, { credentials: "include" });
                 if (!response.ok) {
                     throw new Error(`Error fetching job details: ${response.statusText}`);
                 }
-                const data = await response.json(); // Parse respons JSON
-                // console.log("data diterima:\n");
-                // console.log(data);
-                
+                const data = await response.json();
+    
+                // Memisahkan nama pelapor dan nomor telepon
                 const lastDashIndex = data.nama_pelapor_telepon.lastIndexOf(" - ");
                 let namaPelapor = data.nama_pelapor_telepon;
                 let teleponPelapor = "";
-
+    
                 if (lastDashIndex !== -1) {
                     namaPelapor = data.nama_pelapor_telepon.slice(0, lastDashIndex).trim();
-                    teleponPelapor = data.nama_pelapor_telepon.slice(lastDashIndex + 3).trim(); // +3 karena " - " memiliki 3 karakter
+                    teleponPelapor = data.nama_pelapor_telepon.slice(lastDashIndex + 3).trim();
                 }
-
+    
                 setFormData({
                     kategori: data.kategori_pekerjaan,
                     nama: namaPelapor,
@@ -111,18 +134,20 @@ const EditForm = () => {
                     edited_by: data.edited_by,
                     sla_id: data.sla_id
                 });
-
-                // console.log("Hasil masukkan data ke formData:\n");
-                // console.log(formData);
-
             } catch (error) {
                 console.error("Error fetching job details:", error);
             }
         };
-
-        // Initial fetch
-        fetchData();
+    
+        // Ambil user dulu, lalu fetch data pekerjaan
+        const fetchAllData = async () => {
+            await fetchUserData(); 
+            await fetchData(); 
+        };
+    
+        fetchAllData();
     }, [id]);
+    
 
     const validateForm = () => {
         const newErrors = {};
@@ -220,8 +245,6 @@ const EditForm = () => {
                 formData.jam_selesai = `${formData.jam_selesai}:00`;
             }
 
-            const userId = sessionStorage.getItem("userId");
-
             // Create the payload from the form data
             const formDataToSubmit = {
                 minggu: `Minggu ${mingguAwal}`,
@@ -248,6 +271,7 @@ const EditForm = () => {
             try {
                 const response = await fetch(`http://localhost:5433/data/edit/${id}`, {
                     method: 'PUT',
+                    credentials: "include",
                     headers: {
                         'Content-Type': 'application/json',
                     },

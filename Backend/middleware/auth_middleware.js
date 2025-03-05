@@ -1,15 +1,14 @@
-exports.checkAdmin = (req, res, next) => {
-    console.log("Middleware checkAdmin triggered"); 
-    console.log("Session Data:", req.session);
-    console.log("Session Role:", req.session.role);
+exports.requireRole = (roles) => {
+    return (req, res, next) => {
+        console.log(req.session);
+        if (!req.session || !req.session.userId) {
+            return res.status(401).json({ message: "Not authenticated!" }); 
+        }
 
-    if (!req.session.role || !["Admin", "Super Admin"].includes(req.session.role)) {
-        console.log("Authorization failed: Role is not Admin or Super Admin"); 
-        return res.status(403).json({ message: "Unauthorized: Only Admin or Super Admin can perform this action" });
-    }
+        if (!roles.includes(req.session.role)) {
+            return res.status(403).json({ message: "Access denied" }); 
+        }
 
-    console.log("Authorization passed: User is Admin or Super Admin");
-    next();
+        next();
+    };
 };
-
-

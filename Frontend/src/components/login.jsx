@@ -33,33 +33,24 @@ const Login = () => {
         try {
             const response = await fetch("http://localhost:5433/user/login", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 credentials: "include",
                 body: JSON.stringify({ username, password }),
             });
-            const data = await response.json();
-            console.log(data);
-            if (response.ok) {
-                sessionStorage.setItem("isLoggedIn", "true");
-                // console.log(sessionStorage.getItem("isLoggedIn"));
-                
-                sessionStorage.setItem("userId", data.id);
-                sessionStorage.setItem("username", data.username);
-                sessionStorage.setItem("userRole", data.role);
-                
-                addToast('success', 'Logged in successfully');
-                setTimeout(() => window.location.href = "/", 1000);
-            } else {
+    
+            if (!response.ok) {
                 addToast('error', 'Username or password is incorrect');
+                return;
             }
+    
+            setTimeout(() => window.location.href = "/dashboard", 1000);
             
         } catch (error) {
             console.error("Error logging in:", error);
             addToast('error', 'An error occurred while logging in');
         }
     };
+    
 
     const handleClickShowPassword = () => {
         setShowPassword((prevShowPassword) => !prevShowPassword);

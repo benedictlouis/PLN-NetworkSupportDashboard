@@ -7,6 +7,9 @@ import JobCategories from './charts/job_categories';
 import JobsPerMonths from './charts/jobs_per_month';
 import JobsPerPic from './charts/jobs_per_pic';
 import StatusDistribution from './charts/status_distribution';
+import OverdueJobs from './charts/overdue_jobs';
+import SLACompliancePerPIC from './charts/sla_compliance_per_pic';
+import AverageDurationPerPIC from './charts/average_duration_per_pic';
 
 const Bento = () => {
     const [durationsByCategoryData, setDurationsByCategoryData] = useState([]);
@@ -19,6 +22,11 @@ const Bento = () => {
     const [summaryData, setSummaryData] = useState([]);
     const [sumCategoryData, setSumCategoryData] = useState([]);
     const [sumStatusData, setSumStatusData] = useState([]);
+    const [overdueJobsData, setOverdueJobsData] = useState([]);
+    const [slaCompliancePerPicData, setSLACompliancePerPicData] = useState([]);
+    const [averageDurationPerPicData, setAverageDurationPerPicData] = useState([]);
+
+    const allPICs = ['Febri', 'Fano', 'Tyo', 'Hakim', 'Fandi', 'EOS'];
 
     useEffect(() => {
         axios.get('http://localhost:5433/chart/duration-by-category')
@@ -63,6 +71,45 @@ const Bento = () => {
         axios.get('http://localhost:5433/data/sumstatus')
             .then(response => setSumStatusData(response.data))
             .catch(error => console.error('Error fetching jobs by status:', error));
+
+        axios.get('http://localhost:5433/chart/overdue-jobs')
+            .then(response => setOverdueJobsData(response.data))
+            .catch(error => console.error('Error fetching overdue jobs:', error));
+
+        axios.get('http://localhost:5433/chart/sla-compliance-per-pic')
+            .then(response => {
+                const apiData = response.data;
+
+                // Gabungkan daftar PIC dengan data dari API
+                const mergedData = allPICs.map(pic => {
+                    const found = apiData.find(item => item.individual_pic === pic);
+                    return found || {
+                        individual_pic: pic,
+                        total_jobs: 0,
+                        avg_duration_minutes: 0,
+                        on_time_jobs: 0,
+                        late_jobs: 0
+                    };
+                });
+
+                setSLACompliancePerPicData(mergedData);
+            })
+            .catch(error => console.error('Error fetching SLA compliance per PIC', error));
+
+        axios.get('http://localhost:5433/chart/average-duration-per-pic')
+            .then(response => {
+                const apiData = response.data;
+        
+                // Gabungkan daftar PIC dengan data dari API
+                const mergedData = allPICs.map(pic => {
+                    const found = apiData.find(item => item.individual_pic === pic);
+                    return found || { individual_pic: pic, avg_duration_minutes: 0 };
+                });
+        
+                setAverageDurationPerPicData(mergedData);
+            })
+            .catch(error => console.error('Error fetching average duration per PIC:', error));
+
     }, []);
 
     const bgColor = 
@@ -185,6 +232,15 @@ const Bento = () => {
             </div>
             <div className="col-span-3 row-span-2 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <DurationsByCategory data={durationsByCategoryData} />
+            </div>
+            <div className="col-span-3 row-span-2 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
+                <AverageDurationPerPIC data={averageDurationPerPicData} />
+            </div>
+            <div className="col-span-3 row-span-2 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
+                <SLACompliancePerPIC data={slaCompliancePerPicData} />
+            </div>
+            <div className="col-span-6 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
+                <OverdueJobs data={overdueJobsData} />
             </div>
             <div className="col-span-6 row-span-1 bg-gray-100 rounded-3xl flex justify-center items-center text-black py-4 px-4 shadow">
                 <JobsPerMonths data={jobsPerMonthData} />

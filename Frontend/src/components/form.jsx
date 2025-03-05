@@ -1,13 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ToastContainer from './toastcontainer';
 import { Navigate } from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
+
+    const [userId, setUserId] = useState(null);
+
     const navigate = useNavigate();
-    const userId = sessionStorage.getItem("userId");
-    const userRole = sessionStorage.getItem("userRole");
-    const [isValidate, setIsValidate] = useState(false);
+        useEffect(() => {
+            const fetchUserData = async () => {
+                try {
+                    const response = await fetch("http://localhost:5433/user/me", {
+                        method: "GET",
+                        credentials: "include",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    });
+        
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch user data");
+                    }
+        
+                    const userData = await response.json();
+        
+                    setUserId(userData.userId);
+                } catch (error) {
+                    console.error("Error fetching user status:", error);
+                }
+            };
+        
+            fetchUserData();
+        }, []);
 
     const [formData, setFormData] = useState({
         kategori: "",
@@ -101,10 +126,6 @@ const Form = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (userRole != "Support")(
-            setIsValidate(true)
-        )
-
         // First, validate the form
         if (validateForm()) {
             // Combine date and time into ISO 8601 format
@@ -141,7 +162,6 @@ const Form = () => {
                 tanggal_selesai: null,
                 jam_selesai: null,
                 edited_by: userId,
-                is_validate: isValidate,
                 sla_id: formData.sla_id || null,
             };
 

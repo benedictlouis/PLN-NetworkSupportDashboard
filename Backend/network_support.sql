@@ -237,9 +237,9 @@ DECLARE
     username TEXT; -- Username yang melakukan perubahan
 BEGIN
     -- Ambil username dari edited_by yang terkait
-    SELECT u.username INTO username
-    FROM users u
-    WHERE u.id = NEW.edited_by;
+    EXECUTE 'SELECT username FROM users WHERE id = $1'
+    INTO username
+    USING NEW.edited_by;
 
     -- Loop melalui semua kolom yang dimonitor
     FOR col_name IN

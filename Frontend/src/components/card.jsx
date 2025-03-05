@@ -18,8 +18,11 @@ const Card = ({ reports }) => {
             {reports.map((report) => (
                 <div key={report.id} className="max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow">
                     <a href={`http://localhost:5173/data/${report.id}`}>
-                        <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">{report.kategori_pekerjaan}</h5>
-                    </a>
+                        <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900">
+                            {report.kategori_pekerjaan} <br />
+                            <span className="text-sm font-normal text-gray-500">ID Task: {report.id}</span>
+                        </h5>
+                    </a>    
                     <p className="mb-3 font-normal text-gray-500">
                         Tanggal Laporan: {formatDate(report.tanggal_awal)} <br />
                         Jam Laporan: {report.jam_awal.replace(":00", "")} WIB <br />

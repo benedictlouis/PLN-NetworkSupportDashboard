@@ -4,22 +4,44 @@ import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 
 const ValidationPage = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [role, setUserRole] = useState(null);
     const navigate = useNavigate();
     const [tasks, setTasks] = useState([]);
 
     useEffect(() => {
-        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
-        setIsLoggedIn(isLoggedIn === "true");
-
-        if (isLoggedIn === "false") {
-            navigate('/login');
-        } else if (sessionStorage.getItem("userRole") !== "Admin" && sessionStorage.getItem("userRole") !== "Super Admin") {
-            navigate('/dashboard');
-        }
-
+        const checkAuth = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    credentials: "include", 
+                });
+    
+                if (response.status === 401) {
+                    console.log("User not authenticated. Redirecting to login...");
+                    navigate("/login");
+                    return;
+                }
+    
+                const user = await response.json();
+                console.log("Fetched User Data:", user); // 🔍 Cek isi data user
+    
+                if (!["Admin", "Super Admin"].includes(user.userRole)) {
+                    console.log("User is not admin. Redirecting...");
+                    navigate("/dashboard");
+                    return;
+                }                
+    
+                setUserRole(user.userRole);
+            } catch (error) {
+                console.error("Error checking authentication:", error);
+                navigate("/login");
+            }
+        };
+    
+        checkAuth();
         fetchTasks();
     }, [navigate]);
+    
+    console.log("User Role State:", role); // 🔍 Cek role di state
 
     const fetchTasks = async () => {
         try {

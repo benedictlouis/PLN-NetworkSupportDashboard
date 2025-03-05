@@ -6,18 +6,33 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const AccountManagePage = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
-        setIsLoggedIn(isLoggedIn === "true");
+        const checkAuth = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    credentials: "include", 
+                });
 
-        if (isLoggedIn === "false") {
-            navigate('/login');
-        } else if (sessionStorage.getItem("userRole") !== "Admin" && sessionStorage.getItem("userRole") !== "Super Admin") {
-            navigate('/dashboard');
-        }
+                if (response.status === 401) {
+                    navigate("/login");
+                    return;
+                }
+
+                const user = await response.json();
+                if (!["Admin", "Super Admin"].includes(user.userRole)) {
+                    navigate("/dashboard");
+                    return;
+                }
+
+            } catch (error) {
+                console.error("Error checking authentication:", error);
+                navigate("/login");
+            }
+        };
+
+        checkAuth();
     }, [navigate]);
     
 
@@ -34,7 +49,7 @@ const AccountManagePage = () => {
 
                 <AccountManagement />
             </div>
-            {isLoggedIn && (
+            {(
                 <button
                     onClick={() => (window.location.href = "/register")}
                     className="fixed bottom-6 right-6 w-14 h-14 bg-black-700 hover:bg-[#1C94AC] text-white rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 z-50"

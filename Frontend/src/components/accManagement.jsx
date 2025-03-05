@@ -11,7 +11,7 @@ const AccountManagement = () => {
     const [passwordError, setPasswordError] = useState("");
     const [toasts, setToasts] = useState([]);
 
-    const userRole = sessionStorage.getItem("userRole");
+    const [userRole, setUserRole] = useState(null);
 
     const addToast = (type, message) => {
         const id = new Date().getTime();
@@ -24,13 +24,38 @@ const AccountManagement = () => {
     };
 
     useEffect(() => {
-        if (userRole !== "Admin" && userRole !== "Super Admin") {
-            setError("Anda tidak memiliki izin untuk melihat akun.");
-            setLoading(false);
-            return;
-        }
-
-        const fetchAccounts = async () => {
+        const fetchUserRole = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", { credentials: "include" });
+    
+                if (response.status === 401) {
+                    setError("Anda tidak memiliki izin untuk melihat akun.");
+                    setLoading(false);
+                    return;
+                }
+    
+                const user = await response.json();
+                if (!["Admin", "Super Admin"].includes(user.userRole)) {
+                    setError("Anda tidak memiliki izin untuk melihat akun.");
+                    setLoading(false);
+                    return;
+                }
+    
+                setUserRole(user.userRole); // Simpan role dalam state
+            } catch (error) {
+                console.error("Gagal mengambil data pengguna:", error);
+                setError("Terjadi kesalahan saat mengambil data pengguna.");
+                setLoading(false);
+            }
+        };
+    
+        fetchUserRole();
+    }, []);
+    
+    useEffect(() => {
+        if (!userRole) return; // Hindari pemanggilan fetchAllAccounts sebelum userRole tersedia
+    
+        const fetchAllAccounts = async () => {
             try {
                 const response = await fetch("http://localhost:5433/user/all-accounts", {
                     method: "GET",
@@ -39,23 +64,23 @@ const AccountManagement = () => {
                     },
                     credentials: "include"
                 });
-
+    
                 let errorMessage = "Gagal mengambil daftar akun.";
-
+    
                 if (!response.ok) {
                     try {
-                        const errorData = await response.json(); // Coba parsing error dari backend
+                        const errorData = await response.json();
                         if (errorData.message) {
-                            errorMessage = errorData.message; // Ambil pesan error dari backend jika ada
+                            errorMessage = errorData.message;
                         }
                     } catch (error) {
                         console.error("Failed to parse JSON error response:", error);
                     }
                     throw new Error(errorMessage);
                 }
-
+    
                 const data = await response.json();
-
+    
                 if (data && data.accounts) {
                     setAccounts(data.accounts);
                 } else {
@@ -63,15 +88,15 @@ const AccountManagement = () => {
                 }
             } catch (err) {
                 console.error("Error fetching accounts:", err.message);
-                setError(err.message); // Menampilkan error dari backend di UI
+                setError(err.message);
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchAccounts();
+    
+        fetchAllAccounts();
     }, [userRole]);
-
+    
     const openEditModal = (account) => {
         setSelectedAccount(account);
         setFormData({

@@ -1,20 +1,41 @@
 import Navbar from "../components/navbar";
 import EditForm from "../components/editform";
-import { useEffect } from "react";
+import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const EditPage = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+        const checkAuth = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    credentials: "include", 
+                });
 
-        if (isLoggedIn === "false") {
-            navigate('/login');
-        } else if (sessionStorage.getItem("userRole") !== "Admin" && sessionStorage.getItem("userRole") !== "Super Admin") {
-            navigate('/dashboard');
+                if (response.status === 401) {
+                    navigate("/login");
+                    return;
+                }
+
+                const user = await response.json();
+                if (!["Admin", "Super Admin"].includes(user.userRole)) {
+                    navigate(`/dashboard`); 
+                    return;
+                }
+
+                setIsLoggedIn(true);
+            } catch (error) {
+                console.error("Error checking authentication:", error);
+                navigate("/login");
+            }
         };
-    }, [navigate]);
+
+        checkAuth();
+    }, [navigate, id]);
 
     return (
         <div className="w-screen min-h-screen relative bg-[#fafafa] pt-2">

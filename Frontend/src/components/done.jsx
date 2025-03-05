@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import axios from "axios";
 
 const Done = ({ existingData, id, onClose, onSuccess }) => {
@@ -9,7 +9,36 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
     });
     const [error, setError] = useState(null);
 
-    const userId = sessionStorage.getItem("userId");
+    const [userId, setUserId] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch("http://localhost:5433/user/me", {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+    
+                if (!response.ok) {
+                    throw new Error("Failed to fetch user data");
+                }
+    
+                const userData = await response.json();
+    
+                setIsLoggedIn(true);
+                setUserId(userData.userId);
+            } catch (error) {
+                console.error("Error fetching user status:", error);
+                setIsLoggedIn(false);
+            }
+        };
+    
+        fetchUserData();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -21,12 +50,12 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
+    
         if (!formData.solusi || !formData.tanggal_selesai || !formData.jam_selesai) {
             setError("All fields are required.");
             return;
         }
-
+    
         const updatedData = {
             solusi_keterangan: formData.solusi,
             tanggal_selesai: `${formData.tanggal_selesai}T${formData.jam_selesai}:00.000Z`,
@@ -34,12 +63,14 @@ const Done = ({ existingData, id, onClose, onSuccess }) => {
             status_kerja: "Resolved",
             edited_by: userId,
         };
-
+    
         axios
-            .put(`http://localhost:5433/data/edit/${id}`, updatedData)
+            .put(`http://localhost:5433/data/edit/${id}`, updatedData, {
+                withCredentials: true 
+            })
             .then((response) => {
                 onSuccess(response.data);
-                onClose();
+                onClose(); 
             })
             .catch((error) => {
                 console.error("Error submitting form:", error);

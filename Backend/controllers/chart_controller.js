@@ -148,3 +148,99 @@ exports.jobsPerMonth = async (req, res) => {
   }
 };
 
+// 1️⃣ Jumlah Pekerjaan per PIC dalam Bulan Ini (Hanya yang Divalidasi)
+exports.getJobCountPerPIC = async (req, res) => {
+  try {
+      const query = `
+          SELECT unnest(pic) AS individual_pic, COUNT(*) AS job_count
+          FROM network_support
+          WHERE tanggal_awal >= date_trunc('month', CURRENT_DATE)  
+            AND tanggal_awal < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'
+            AND is_validate = TRUE
+          GROUP BY individual_pic
+          ORDER BY job_count DESC;
+      `;
+      const result = await pool.query(query);
+      res.json(result.rows);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// 2️⃣ Pekerjaan yang Melebihi SLA Durasi (Hanya yang Divalidasi)
+exports.getOverdueJobs = async (req, res) => {
+  try {
+      const query = `
+          SELECT n.id, unnest(n.pic) AS individual_pic, s.sla_level, 
+                (EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) AS actual_duration_minutes,
+                s.sla_duration AS sla_limit_minutes
+          FROM network_support n
+          JOIN sla s ON n.sla_id = s.id
+          WHERE n.tanggal_selesai IS NOT NULL 
+            AND n.jam_selesai IS NOT NULL
+            AND is_validate = TRUE
+            AND (EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) > s.sla_duration
+          ORDER BY actual_duration_minutes DESC;
+      `;
+      const result = await pool.query(query);
+      res.json(result.rows);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// 3️⃣ Statistik Kepatuhan SLA per PIC (Hanya yang Divalidasi)
+exports.getSLACompliancePerPIC = async (req, res) => {
+  try {
+      const query = `
+          SELECT unnest(n.pic) AS individual_pic, 
+                 COUNT(*) AS total_jobs,
+                 COUNT(CASE 
+                          WHEN (EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) <= s.sla_duration 
+                          THEN 1 
+                       END) AS on_time_jobs,
+                 COUNT(CASE 
+                          WHEN (EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) > s.sla_duration 
+                          THEN 1 
+                       END) AS late_jobs
+          FROM network_support n
+          JOIN sla s ON n.sla_id = s.id
+          WHERE n.tanggal_selesai IS NOT NULL 
+            AND n.jam_selesai IS NOT NULL
+            AND is_validate = TRUE
+          GROUP BY individual_pic
+          ORDER BY total_jobs DESC;
+      `;
+      const result = await pool.query(query);
+      res.json(result.rows);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// 5️⃣ Rata-rata Durasi Pekerjaan per PIC (Hanya yang Divalidasi)
+exports.getAverageDurationPerPIC = async (req, res) => {
+  try {
+      const query = `
+          SELECT unnest(n.pic) AS individual_pic, 
+                 AVG(EXTRACT(EPOCH FROM ((n.tanggal_selesai + n.jam_selesai) - (n.tanggal_awal + n.jam_awal))) / 60) AS avg_duration_minutes
+          FROM network_support n
+          JOIN sla s ON n.sla_id = s.id
+          WHERE n.tanggal_selesai IS NOT NULL 
+            AND n.jam_selesai IS NOT NULL
+            AND is_validate = TRUE
+          GROUP BY individual_pic
+          ORDER BY avg_duration_minutes DESC;
+      `;
+      const result = await pool.query(query);
+      res.json(result.rows);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+

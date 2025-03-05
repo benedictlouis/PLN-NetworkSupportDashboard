@@ -4,6 +4,7 @@ const { pool } = require("./config/db.config.js");
 const cors = require("cors");
 const csurf = require('csurf');
 const session = require("express-session"); 
+const pgSession = require("connect-pg-simple")(session);
 require("dotenv").config();
 
 const app = express();
@@ -21,12 +22,34 @@ const userRoutes = require("./routes/user_routes.js");
 const dataRoutes = require("./routes/data_routes.js");
 const chartRoutes = require("./routes/chart_routes.js");
 
-app.use(session({
+/*app.use(
+    session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { httpOnly: true, secure: false, maxAge: 3600000 } // 1 jam
-}));
+}));*/
+
+app.use(
+    session({
+        store: new pgSession({
+            pool,
+            tableName: "session",
+        }),
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: false, // Ubah ke true jika pakai HTTPS
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24 // 1 hari
+        }
+    })
+);
+
+
+
+
 
 
 app.use("/user", userRoutes);
