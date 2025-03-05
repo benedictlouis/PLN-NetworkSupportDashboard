@@ -12,6 +12,7 @@ const ListPage = () => {
     const [latestFilter, setLatestFilter] = useState("");
     const [tasks, setTasks] = useState([]);
     const [filteredTasks, setFilteredTasks] = useState([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -31,12 +32,13 @@ const ListPage = () => {
                 const userData = await response.json();
                 
                 // Jika sudah login, fetch tasks
-                fetchTasks();
+                setIsLoggedIn(true);
+                // fetchTasks();
             } catch (error) {
                 console.error("Error fetching user status:", error);
             }
         };
-
+        fetchTasks();
         fetchUserData();
     }, []);
 
@@ -245,7 +247,7 @@ const ListPage = () => {
                 )}
             </div>
 
-            {(
+            {isLoggedIn &&(
                 <button
                     onClick={() => (window.location.href = "/add")}
                     className="fixed bottom-6 right-6 w-14 h-14 bg-black-700 hover:bg-[#1C94AC] text-white rounded-full flex items-center justify-center shadow-lg transition-transform transform hover:scale-105 z-50"
