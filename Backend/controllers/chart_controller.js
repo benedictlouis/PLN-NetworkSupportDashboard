@@ -168,7 +168,6 @@ exports.getJobCountPerPIC = async (req, res) => {
   }
 };
 
-// 2️⃣ Pekerjaan yang Melebihi SLA Durasi (Hanya yang Divalidasi)
 exports.getOverdueJobs = async (req, res) => {
   try {
       const query = `

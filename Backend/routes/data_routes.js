@@ -14,7 +14,7 @@ router.get('/sumstatus', dataController.getJobsByStatus);
 router.get('/history/:id', dataController.getHistoryByTaskId);
 router.get('/:id', dataController.getDataById);
 router.post('/input', dataController.addData);
-router.put('/edit/:id', authMiddleware.requireRole(['Admin', 'Super Admin']), dataController.updateData);
+router.put('/edit/:id', authMiddleware.requireRole(['Support', 'Admin', 'Super Admin']), dataController.updateData);
 router.delete('/delete/:id', authMiddleware.requireRole(['Admin', 'Super Admin']), dataController.deleteData);
 router.get('/avg-duration-per-pic', dataController.getAverageDurationPerPIC);
 router.get('/pic-performance', dataController.getPICPerformance);

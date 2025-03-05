@@ -249,8 +249,8 @@ exports.getDurations = async (req, res) => {
 
 exports.getJobSummary = async (req, res) => {
     try {
-        const totalJobsQuery = 'SELECT COUNT(*) AS total_jobs FROM network_support';
-        const unfinishedJobsQuery = "SELECT COUNT(*) AS unfinished_jobs FROM network_support WHERE status_kerja != 'Resolved'";
+        const totalJobsQuery = "SELECT COUNT(*) AS total_jobs FROM network_support WHERE is_validate = TRUE";
+        const unfinishedJobsQuery = "SELECT COUNT(*) AS unfinished_jobs FROM network_support WHERE status_kerja != 'Resolved' AND is_validate = TRUE";
 
         const totalJobsResult = await pool.query(totalJobsQuery);
         const unfinishedJobsResult = await pool.query(unfinishedJobsQuery);
@@ -269,7 +269,7 @@ exports.getUnfinishedJobsByCategory = async (req, res) => {
         const query = `
             SELECT kategori_pekerjaan, COUNT(*) AS total_jobs 
             FROM network_support 
-            WHERE status_kerja != 'Resolved' 
+            WHERE status_kerja != 'Resolved' AND is_validate = TRUE
             GROUP BY kategori_pekerjaan
             ORDER BY total_jobs DESC
         `;
@@ -330,7 +330,6 @@ exports.getUnvalidatedData = async (req, res) => {
     }
 };
 
-// 4️⃣ Rata-rata Durasi Pekerjaan per PIC (Hanya yang Divalidasi)
 exports.getAverageDurationPerPIC = async (req, res) => {
     try {
         const query = `
@@ -351,7 +350,6 @@ exports.getAverageDurationPerPIC = async (req, res) => {
     }
 };
   
-  // 6️⃣ Statistik Performa PIC (Total Pekerjaan, Rata-rata Durasi, Kepatuhan SLA)
 exports.getPICPerformance = async (req, res) => {
     try {
         const query = `
