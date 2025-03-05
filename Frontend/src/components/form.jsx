@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 const Form = () => {
     const navigate = useNavigate();
     const userId = sessionStorage.getItem("userId");
+    const userRole = sessionStorage.getItem("userRole");
+    const [isValidate, setIsValidate] = useState(false);
 
     const [formData, setFormData] = useState({
         kategori: "",
@@ -99,6 +101,10 @@ const Form = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (userRole != "Support")(
+            setIsValidate(true)
+        )
+
         // First, validate the form
         if (validateForm()) {
             // Combine date and time into ISO 8601 format
@@ -135,6 +141,7 @@ const Form = () => {
                 tanggal_selesai: null,
                 jam_selesai: null,
                 edited_by: userId,
+                is_validate: isValidate,
                 sla_id: formData.sla_id || null,
             };
 
