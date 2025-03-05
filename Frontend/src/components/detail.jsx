@@ -173,6 +173,7 @@ const Detail = () => {
         setData(updatedData);
         setShowDone(false);
         addToast("success", "Pekerjaan berhasil diselesaikan!");
+        fetchData();
     };
 
     const handleMarkAsInProgress = async () => {
@@ -302,7 +303,7 @@ const Detail = () => {
 
     return (
         <div className="container mx-auto p-6">
-            <div className="flex flex-col items-center justify-center w-full">
+            <div className="flex flex-col items-center justify-center w-full z-10">
                 <h1 className="font-bold text-[60px] text-gradient pt-4 pb-2">{data.kategori_pekerjaan}</h1>
                 <h2
                     className={`text-[20px] pb-2 ${data.status_kerja === 'Resolved'
@@ -319,7 +320,7 @@ const Detail = () => {
             </div>
 
             {/* Button toggle slide-over */}
-            <div className="absolute top-44 right-8 max-md:right-2">
+            <div className="absolute top-44 right-8 max-md:right-2 z-50">
                 <div
                     onClick={toggleSlideover} // Pass the function reference here
                     className="flex items-center gap-2 cursor-pointer px-5 py-2 max-md:text-sm text-md hover:text-[#1C94AC] rounded text-gray-700"
@@ -381,7 +382,7 @@ const Detail = () => {
                 </div>
             </div>
 
-            <div className="bg-white shadow-lg rounded-lg p-6">
+            <div className="bg-white shadow-lg rounded-lg p-6 z-20">
                 <div className="grid grid-cols-3 gap-4">
                     <div className="col-span-1 pb-4">
                         <p className="text-sm text-gray-500">Minggu</p>

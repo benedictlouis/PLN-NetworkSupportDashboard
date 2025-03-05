@@ -573,7 +573,6 @@ const EditForm = () => {
                     id="sla_id"
                     value={formData.sla_id || ""} 
                     onChange={handleChange} 
-                    required 
                 >
                     <option value="">Pilih SLA</option>
                     <option value="1">SLA 1 - Respon dalam 0-30 menit</option>
