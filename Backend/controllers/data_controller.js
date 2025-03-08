@@ -285,7 +285,7 @@ exports.getJobsByStatus = async (req, res) => {
     try {
         const query = `
             SELECT status_kerja, COUNT(*) AS total_jobs 
-            FROM network_support 
+            FROM network_support  WHERE is_validate = TRUE
             GROUP BY status_kerja
             ORDER BY total_jobs DESC
         `;

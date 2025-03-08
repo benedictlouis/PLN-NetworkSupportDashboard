@@ -15,7 +15,7 @@ exports.getDurations = async (req, res) => {
       FROM network_support
       WHERE 
         tanggal_awal IS NOT NULL AND jam_awal IS NOT NULL AND 
-        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL
+        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL AND is_validate = TRUE
       ORDER BY id ASC;
     `);
     res.status(200).json(result.rows);
@@ -42,7 +42,7 @@ exports.getDurationsByCategory = async (req, res) => {
       FROM network_support
       WHERE 
         tanggal_awal IS NOT NULL AND jam_awal IS NOT NULL AND 
-        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL
+        tanggal_selesai IS NOT NULL AND jam_selesai IS NOT NULL AND is_validate = TRUE
       GROUP BY kategori_pekerjaan
       ORDER BY avg_duration_minutes DESC;
     `);
@@ -60,7 +60,7 @@ exports.jobCategories = async (req, res) => {
       SELECT 
         kategori_pekerjaan,
         COUNT(*) AS total_jobs
-      FROM network_support
+      FROM network_support WHERE is_validate = TRUE
       GROUP BY kategori_pekerjaan
       ORDER BY total_jobs DESC;
     `);
@@ -79,7 +79,7 @@ exports.jobsPerPic = async (req, res) => {
         kategori_pekerjaan AS category,
         COUNT(*) AS total_jobs
       FROM network_support
-      WHERE kategori_pekerjaan IS NOT NULL
+      WHERE kategori_pekerjaan IS NOT NULL AND is_validate = TRUE
       GROUP BY pic_name, kategori_pekerjaan
       ORDER BY pic_name, kategori_pekerjaan;
     `);
@@ -94,7 +94,7 @@ exports.jobsPerPicPercentage = async (req, res) => {
   try {
     const result = await pool.query(`
       WITH total_jobs AS (
-        SELECT COUNT(*) AS total FROM network_support
+        SELECT COUNT(*) AS total FROM network_support WHERE is_validate = TRUE
       )
       SELECT 
         unnest(pic) AS pic_name,
@@ -117,7 +117,7 @@ exports.jobStatusDistribution = async (req, res) => {
       SELECT 
         status_kerja,
         COUNT(*) AS total_jobs
-      FROM network_support
+      FROM network_support WHERE is_validate = TRUE
       GROUP BY status_kerja
       ORDER BY total_jobs DESC;
     `);
@@ -137,7 +137,7 @@ exports.jobsPerMonth = async (req, res) => {
         TO_CHAR(tanggal_awal, 'Mon YYYY') AS month_year,
         COUNT(*) AS total_jobs
       FROM network_support
-      WHERE tanggal_awal IS NOT NULL
+      WHERE tanggal_awal IS NOT NULL AND is_validate = TRUE
       GROUP BY year, month, month_year
       ORDER BY year ASC, month ASC, MIN(id) ASC;
     `);
@@ -148,7 +148,6 @@ exports.jobsPerMonth = async (req, res) => {
   }
 };
 
-// 1️⃣ Jumlah Pekerjaan per PIC dalam Bulan Ini (Hanya yang Divalidasi)
 exports.getJobCountPerPIC = async (req, res) => {
   try {
       const query = `
@@ -190,7 +189,6 @@ exports.getOverdueJobs = async (req, res) => {
   }
 };
 
-// 3️⃣ Statistik Kepatuhan SLA per PIC (Hanya yang Divalidasi)
 exports.getSLACompliancePerPIC = async (req, res) => {
   try {
       const query = `
@@ -220,7 +218,6 @@ exports.getSLACompliancePerPIC = async (req, res) => {
   }
 };
 
-// 5️⃣ Rata-rata Durasi Pekerjaan per PIC (Hanya yang Divalidasi)
 exports.getAverageDurationPerPIC = async (req, res) => {
   try {
       const query = `
