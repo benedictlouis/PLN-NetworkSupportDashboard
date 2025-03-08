@@ -2,7 +2,9 @@ import React from 'react';
 
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './index.css';
 
+import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements, Navigate } from "react-router-dom";
 
 import ErrorPage from './pages/page404';
 import DashboardPage from './pages/dashboardpage';
@@ -14,9 +16,6 @@ import EditPage from './pages/editpage';
 import AccManagePage from './pages/accManagePage';
 import RegisterPage from './pages/registerpage';
 import ValidationPage from './pages/validationpage';
-
-import './index.css';
-import { Route, RouterProvider, createBrowserRouter, createRoutesFromElements, Navigate } from "react-router-dom";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
